@@ -21,6 +21,7 @@ interface TaskDetailProps {
   onStatusChange: (id: number, status: number) => void;
   onToggleImportance: (id: number) => void;
   onTaskUpdate: (updatedTask: TodoTask) => void;
+  onCalendarClick?: (date: Date) => void;
 }
 
 export function TaskDetail({ 
@@ -30,7 +31,8 @@ export function TaskDetail({
   onDelete, 
   onStatusChange, 
   onToggleImportance,
-  onTaskUpdate
+  onTaskUpdate,
+  onCalendarClick
 }: TaskDetailProps) {
   // Custom hooks
   const { localTask, setLocalTask, isAnimating } = useTaskDetailState(task, isOpen);
@@ -123,6 +125,7 @@ export function TaskDetail({
                 onDelete(localTask.id);
                 setShowTaskMenu(false);
               }}
+              onCalendarClick={onCalendarClick}
             />
             
             <div className="p-6 space-y-6">
