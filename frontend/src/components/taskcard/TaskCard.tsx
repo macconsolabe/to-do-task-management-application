@@ -15,9 +15,21 @@ export function TaskCard({ task, onTaskClick, onStatusChange, onDelete }: TaskCa
 
   return (
     <div 
-      className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer transform" 
+      className="p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer transform relative overflow-hidden" 
       onClick={() => onTaskClick(task)}
+      style={{ 
+        background: 'linear-gradient(145deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.1), 0 8px 25px rgba(0,0,0,0.1)'
+      }}
     >
+      {/* Reflection overlay */}
+      <div 
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.2) 100%)'
+        }}
+      ></div>
+      <div className="relative z-10">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -92,6 +104,7 @@ export function TaskCard({ task, onTaskClick, onStatusChange, onDelete }: TaskCa
             </svg>
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

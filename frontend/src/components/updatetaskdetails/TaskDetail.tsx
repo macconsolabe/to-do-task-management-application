@@ -76,13 +76,37 @@ export function TaskDetail({
       isOpen ? 'bg-opacity-50' : 'bg-opacity-0'
     }`}>
       <div 
-        className={`bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 transform ${
+        className={`rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 transform relative ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
-        style={{ backgroundColor: '#faf9f7' }}
+        style={{ 
+          background: 'linear-gradient(145deg, #e8eaed 0%, #d1d5db 30%, #f1f3f4 70%, #e8eaed 100%)',
+          boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 4px rgba(0,0,0,0.15), 0 20px 40px rgba(0,0,0,0.2)'
+        }}
       >
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="bg-white rounded-t-3xl">
+        {/* Metallic reflection overlay */}
+        <div 
+          className="absolute inset-0 rounded-3xl pointer-events-none z-0"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 25%, transparent 75%, rgba(255,255,255,0.3) 100%)'
+          }}
+        ></div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
+          <div 
+            className="rounded-t-3xl relative overflow-hidden"
+            style={{ 
+              background: 'linear-gradient(145deg, rgba(248,249,250,0.98) 0%, rgba(233,236,239,0.95) 50%, rgba(248,249,250,0.98) 100%)',
+              backdropFilter: 'blur(5px)'
+            }}
+          >
+            {/* Inner content reflection */}
+            <div 
+              className="absolute inset-0 rounded-t-3xl pointer-events-none"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.2) 100%)'
+              }}
+            ></div>
+            <div className="relative z-10">
             <TaskDetailHeader
               task={localTask}
               showTaskMenu={showTaskMenu}
@@ -152,6 +176,7 @@ export function TaskDetail({
               <div className="text-xs text-gray-500 font-light border-t pt-4">
                 Last updated: {new Date(localTask.updatedAt).toLocaleString()}
               </div>
+            </div>
             </div>
           </div>
         </div>
