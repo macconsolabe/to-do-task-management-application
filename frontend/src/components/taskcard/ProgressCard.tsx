@@ -10,7 +10,21 @@ export function ProgressCard({ task }: ProgressCardProps) {
   const progressColor = getProgressColor();
 
   return (
-    <div className="p-6 rounded-3xl text-white shadow-lg" style={{ backgroundColor: progressColor }}>
+    <div 
+      className="p-6 rounded-3xl text-white shadow-lg relative overflow-hidden" 
+      style={{ 
+        background: `linear-gradient(145deg, ${progressColor} 0%, #e6b800 50%, ${progressColor} 100%)`,
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2), 0 8px 25px rgba(0,0,0,0.15)'
+      }}
+    >
+      {/* Metallic reflection overlay */}
+      <div 
+        className="absolute inset-0 rounded-3xl pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.1) 100%)'
+        }}
+      ></div>
+      <div className="relative z-10">
       <div className="flex items-start justify-between mb-4">
         <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg"></div>
       </div>
@@ -35,6 +49,7 @@ export function ProgressCard({ task }: ProgressCardProps) {
           <span className="font-light">Due: {new Date(task.dueDate).toLocaleDateString()}</span>
         </div>
       )}
+      </div>
     </div>
   );
 }

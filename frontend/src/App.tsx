@@ -4,14 +4,13 @@ import type { TodoTask, CreateTaskDto, UpdateTaskDto } from './services/api';
 // Components
 import { Header } from './components/layout/Header';
 import { WelcomeSection } from './components/layout/WelcomeSection';
-import { FloatingAddButton } from './components/layout/FloatingAddButton';
 import { TodaysSummary } from './components/taskcard/TodaysSummary';
 import { TaskList } from './components/taskcard/TaskList';
 import { ErrorMessage } from './components/ui/ErrorMessage';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Notification } from './components/ui/Notification';
-import { TaskForm } from './components/TaskForm';
-import { TaskDetail } from './components/taskcard/TaskDetail';
+import { CreateNewTask } from './components/createnewtask/CreateNewTask';
+import { TaskDetail } from './components/updatetaskdetails/TaskDetail';
 
 // Hooks
 import { useTasks } from './hooks/useTasks';
@@ -112,7 +111,7 @@ function App() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#faf9f7' }}>
-      <Header />
+      <Header onCreateClick={() => setIsFormOpen(true)} />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <WelcomeSection />
@@ -131,10 +130,8 @@ function App() {
           error={error}
         />
 
-        <FloatingAddButton onClick={() => setIsFormOpen(true)} />
-
         {/* Modals */}
-        <TaskForm
+        <CreateNewTask
           task={editingTask}
           isOpen={isFormOpen}
           onClose={handleCloseForm}
