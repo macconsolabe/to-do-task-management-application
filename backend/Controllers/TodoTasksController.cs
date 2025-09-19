@@ -22,6 +22,7 @@ namespace TodoApi.Controllers
         public async Task<ActionResult<IEnumerable<TodoTask>>> GetTodoTasks()
         {
             return await _context.TodoTasks
+                .Include(t => t.Subtasks.OrderBy(s => s.Order))
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }
@@ -30,7 +31,9 @@ namespace TodoApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoTask>> GetTodoTask(int id)
         {
-            var todoTask = await _context.TodoTasks.FindAsync(id);
+            var todoTask = await _context.TodoTasks
+                .Include(t => t.Subtasks.OrderBy(s => s.Order))
+                .FirstOrDefaultAsync(t => t.Id == id);
 
             if (todoTask == null)
             {
@@ -68,7 +71,7 @@ namespace TodoApi.Controllers
 
         // PUT: api/TodoTasks/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTodoTask(int id, UpdateTodoTaskDto updateDto)
+        public async Task<ActionResult<TodoTask>> UpdateTodoTask(int id, UpdateTodoTaskDto updateDto)
         {
             if (!ModelState.IsValid)
             {
@@ -104,7 +107,12 @@ namespace TodoApi.Controllers
                 }
             }
 
-            return NoContent();
+            // Reload the task with subtasks to return the complete updated task
+            var updatedTask = await _context.TodoTasks
+                .Include(t => t.Subtasks.OrderBy(s => s.Order))
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
+            return updatedTask!;
         }
 
         // DELETE: api/TodoTasks/5

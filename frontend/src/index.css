@@ -19,3 +19,30 @@ body {
     background-color: #0f172a;
   }
 }
+
+/* Custom scrollbar for eTask modals */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 24px 0; /* Add top and bottom margin to keep scrollbar within rounded corners */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #F4C430;
+}
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}

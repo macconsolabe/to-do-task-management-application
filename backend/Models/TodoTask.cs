@@ -24,6 +24,12 @@ namespace TodoApi.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        // Manual progress (0-100) - used when no subtasks exist
+        public int ManualProgress { get; set; } = 0;
+
+        // Navigation property for subtasks
+        public ICollection<Subtask> Subtasks { get; set; } = new List<Subtask>();
     }
 
     public enum TaskStatus
