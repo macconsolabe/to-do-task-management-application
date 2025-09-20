@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
 using TodoApp.Models.Entities;
 using TodoApp.Models.DTOs.Request;
+using TodoApp.Models.DTOs.Response;
+using TodoApp.Extensions;
 using TaskStatus = TodoApp.Models.Entities.TaskStatus;
 
 namespace TodoApi.Controllers
@@ -18,19 +20,30 @@ namespace TodoApi.Controllers
             _context = context;
         }
 
-        // GET: api/TodoTasks
+        // GET: api/TodoTasks?userId={userId}
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoTask>>> GetTodoTasks()
+        public async Task<ActionResult<IEnumerable<TodoTaskResponseDto>>> GetTodoTasks([FromQuery] int? userId = null)
         {
-            return await _context.TodoTasks
+            var query = _context.TodoTasks
                 .Include(t => t.Subtasks.OrderBy(s => s.Order))
+                .AsQueryable();
+
+            // Filter by user if userId is provided
+            if (userId.HasValue)
+            {
+                query = query.Where(t => t.UserId == userId.Value);
+            }
+
+            var tasks = await query
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+
+            return tasks.Select(t => t.ToResponseDto()).ToList();
         }
 
         // GET: api/TodoTasks/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoTask>> GetTodoTask(int id)
+        public async Task<ActionResult<TodoTaskResponseDto>> GetTodoTask(int id)
         {
             var todoTask = await _context.TodoTasks
                 .Include(t => t.Subtasks.OrderBy(s => s.Order))
@@ -41,16 +54,26 @@ namespace TodoApi.Controllers
                 return NotFound();
             }
 
-            return todoTask;
+            return todoTask.ToResponseDto();
         }
 
         // POST: api/TodoTasks
         [HttpPost]
-        public async Task<ActionResult<TodoTask>> CreateTodoTask(CreateTodoTaskDto createDto)
+        public async Task<ActionResult<TodoTaskResponseDto>> CreateTodoTask(CreateTodoTaskDto createDto)
         {
+            // Debug logging
+            Console.WriteLine($"Received CreateTodoTaskDto: Title={createDto.Title}, UserId={createDto.UserId}");
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            // Verify user exists
+            var userExists = await _context.Users.AnyAsync(u => u.Id == createDto.UserId);
+            if (!userExists)
+            {
+                return BadRequest(new { message = "Invalid user ID" });
             }
 
             var todoTask = new TodoTask
@@ -59,20 +82,32 @@ namespace TodoApi.Controllers
                 Description = createDto.Description,
                 Priority = createDto.Priority,
                 DueDate = createDto.DueDate,
+                UserId = createDto.UserId,
                 Status = TaskStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
+            // Debug logging
+            Console.WriteLine($"Creating TodoTask: Title={todoTask.Title}, UserId={todoTask.UserId}");
+
             _context.TodoTasks.Add(todoTask);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTodoTask), new { id = todoTask.Id }, todoTask);
+            Console.WriteLine($"Saved TodoTask with ID: {todoTask.Id}, UserId: {todoTask.UserId}");
+
+            // Load the task with subtasks for proper DTO conversion
+            var createdTask = await _context.TodoTasks
+                .Include(t => t.Subtasks.OrderBy(s => s.Order))
+                .FirstAsync(t => t.Id == todoTask.Id);
+
+            var responseDto = createdTask.ToResponseDto();
+            return CreatedAtAction(nameof(GetTodoTask), new { id = todoTask.Id }, responseDto);
         }
 
         // PUT: api/TodoTasks/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<TodoTask>> UpdateTodoTask(int id, UpdateTodoTaskDto updateDto)
+        public async Task<ActionResult<TodoTaskResponseDto>> UpdateTodoTask(int id, UpdateTodoTaskDto updateDto)
         {
             if (!ModelState.IsValid)
             {
@@ -113,7 +148,7 @@ namespace TodoApi.Controllers
                 .Include(t => t.Subtasks.OrderBy(s => s.Order))
                 .FirstOrDefaultAsync(t => t.Id == id);
             
-            return updatedTask!;
+            return updatedTask!.ToResponseDto();
         }
 
         // DELETE: api/TodoTasks/5

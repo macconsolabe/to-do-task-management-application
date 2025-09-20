@@ -56,6 +56,7 @@ export interface CreateTaskDto {
   description: string;
   priority: number;
   dueDate?: string;
+  userId: number;
 }
 
 export interface UpdateTaskDto {
@@ -76,11 +77,15 @@ class ApiService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:5000/api';
+    this.baseUrl = import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:5001/api';
   }
 
-  async getAllTasks(): Promise<TodoTask[]> {
-    const response = await fetch(`${this.baseUrl}/TodoTasks`);
+  async getAllTasks(userId?: number): Promise<TodoTask[]> {
+    const url = userId 
+      ? `${this.baseUrl}/TodoTasks?userId=${userId}`
+      : `${this.baseUrl}/TodoTasks`;
+    
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch tasks: ${response.statusText}`);
     }

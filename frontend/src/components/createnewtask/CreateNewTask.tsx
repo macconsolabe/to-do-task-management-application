@@ -1,9 +1,9 @@
 import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/api';
 
 // Hooks
-import { useCreateNewTaskState } from '../../hooks/useCreateNewTaskState';
-import { useCreateNewTaskDropdowns } from '../../hooks/useCreateNewTaskDropdowns';
-import { useCreateNewTaskSubtasks } from '../../hooks/useCreateNewTaskSubtasks';
+import { useCreateNewTaskState } from '../../hooks/tasks/useCreateNewTaskState';
+import { useCreateNewTaskDropdowns } from '../../hooks/tasks/useCreateNewTaskDropdowns';
+import { useCreateNewTaskSubtasks } from '../../hooks/tasks/useCreateNewTaskSubtasks';
 
 // Components
 import { CreateNewTaskHeader } from './CreateNewTaskHeader';
