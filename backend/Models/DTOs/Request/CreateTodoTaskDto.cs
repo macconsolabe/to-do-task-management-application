@@ -16,6 +16,9 @@ namespace TodoApp.Models.DTOs.Request
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
 
         public DateTime? DueDate { get; set; }
+
+        [Required]
+        public int UserId { get; set; }
     }
 
     public class UpdateTodoTaskDto

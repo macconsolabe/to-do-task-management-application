@@ -102,12 +102,18 @@ export function useCreateNewTaskState({ task, isOpen, onSubmit, onClose }: UseCr
     
     setIsSubmitting(true);
     try {
-      const submitData = {
+      const submitData = task ? {
         title: formData.title.trim(),
         description: formData.description.trim(),
         priority: formData.priority,
         dueDate: formData.dueDate || undefined,
-        ...(task && { status: formData.status })
+        status: formData.status
+      } : {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        priority: formData.priority,
+        dueDate: formData.dueDate || undefined,
+        userId: 0 // Will be set by the calling component
       };
       
       await onSubmit(submitData);

@@ -27,6 +27,8 @@ import { useTaskModal } from './hooks/tasks/useTaskModal';
 import { filterTasks } from './utils/taskUtils';
 
 function MainApp() {
+  const { user } = useUser();
+  
   // State
   const [activeTab, setActiveTab] = useState<'todo' | 'important' | 'notes' | 'completed'>('todo');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -55,8 +57,14 @@ function MainApp() {
 
   // Handlers
   const handleCreateTask = async (taskData: CreateTaskDto) => {
+    if (!user) {
+      showNotification('Please log in to create tasks', 'error');
+      return;
+    }
+
     try {
-      await createTask(taskData);
+      const taskWithUser = { ...taskData, userId: user.id };
+      await createTask(taskWithUser);
       showNotification('Task created successfully! 🎉', 'success');
     } catch (err) {
       showNotification('Failed to create task', 'error');

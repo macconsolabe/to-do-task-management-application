@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import type { TodoTask, CreateTaskDto } from '../../services/api';
+import { useUser } from '../../contexts/UserContext';
 
 export function useTasks() {
+  const { user } = useUser();
   const [tasks, setTasks] = useState<TodoTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -11,7 +13,7 @@ export function useTasks() {
     try {
       setError(null);
       setLoading(true);
-      const fetchedTasks = await apiService.getAllTasks();
+      const fetchedTasks = await apiService.getAllTasks(user?.id);
       setTasks(fetchedTasks);
       console.log('Tasks loaded:', fetchedTasks);
     } catch (err) {
@@ -56,8 +58,10 @@ export function useTasks() {
   };
 
   useEffect(() => {
-    loadTasks();
-  }, []);
+    if (user) {
+      loadTasks();
+    }
+  }, [user]);
 
   return {
     tasks,
