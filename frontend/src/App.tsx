@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import type { TodoTask, CreateTaskDto, UpdateTaskDto } from './services/api';
 
+// User System
+import { UserProvider, useUser } from './contexts/UserContext';
+import { WelcomeOnboarding } from './components/onboarding/WelcomeOnboarding';
+import { UserSelectionScreen } from './components/login/UserSelectionScreen';
+
 // Components
 import { Header } from './components/layout/Header';
 import { WelcomeSection } from './components/layout/WelcomeSection';
@@ -14,14 +19,14 @@ import { TaskDetail } from './components/updatetaskdetails/TaskDetail';
 import { CalendarModal } from './components/calendar/CalendarModal';
 
 // Hooks
-import { useTasks } from './hooks/useTasks';
-import { useNotification } from './hooks/useNotification';
-import { useTaskModal } from './hooks/useTaskModal';
+import { useTasks } from './hooks/tasks/useTasks';
+import { useNotification } from './hooks/ui/useNotification';
+import { useTaskModal } from './hooks/tasks/useTaskModal';
 
 // Utils
 import { filterTasks } from './utils/taskUtils';
 
-function App() {
+function MainApp() {
   // State
   const [activeTab, setActiveTab] = useState<'todo' | 'important' | 'notes' | 'completed'>('todo');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -258,6 +263,49 @@ function App() {
       </div>
     </div>
   );
+}
+
+function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
+  );
+}
+
+function AppContent() {
+  const { user, loading, isFirstTimeUser, hasExistingUsers, allUsers, completeOnboarding, loginUser, startOnboarding } = useUser();
+
+  // Show loading while checking user status
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  // Show onboarding for first-time users OR when explicitly requested
+  if (isFirstTimeUser) {
+    return (
+      <WelcomeOnboarding 
+        onComplete={() => {
+          completeOnboarding();
+          // The UserContext will automatically update and show the main app
+        }} 
+      />
+    );
+  }
+
+  // Show user selection for existing users (after logout or app restart)
+  if (!user && hasExistingUsers) {
+    return (
+      <UserSelectionScreen 
+        users={allUsers}
+        onUserSelect={loginUser}
+        onCreateNewAccount={startOnboarding}
+      />
+    );
+  }
+
+  // Show main app for logged-in users
+  return <MainApp />;
 }
 
 export default App;

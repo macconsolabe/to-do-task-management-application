@@ -1,5 +1,5 @@
-import type { TodoTask, UpdateTaskDto } from '../services/api';
-import { apiService } from '../services/api';
+import type { TodoTask, UpdateTaskDto } from '../../services/api';
+import { apiService } from '../../services/api';
 
 export function useTaskDetailActions() {
   const handleSubtaskToggle = async (

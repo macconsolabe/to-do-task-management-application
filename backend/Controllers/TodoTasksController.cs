@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
-using TodoApi.Models;
-using TaskStatus = TodoApi.Models.TaskStatus;
+using TodoApp.Models.Entities;
+using TodoApp.Models.DTOs.Request;
+using TaskStatus = TodoApp.Models.Entities.TaskStatus;
 
 namespace TodoApi.Controllers
 {

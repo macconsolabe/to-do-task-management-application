@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TodoApi.Models
+namespace TodoApp.Models.Entities
 {
     public class Subtask
     {

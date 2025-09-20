@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ezraLogo from '../../assets/ezralogo.png';
+import { useUser } from '../../contexts/UserContext';
+import { ProfileModal } from '../profile/ProfileModal';
 
 interface HeaderProps {
   onCreateClick: () => void;
@@ -8,24 +10,53 @@ interface HeaderProps {
 
 export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useUser();
 
-  // Close menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
     };
 
-    if (showMenu) {
+    if (showMenu || showProfileMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showMenu]);
+  }, [showMenu, showProfileMenu]);
+
+  // Get user initials for avatar
+  const getUserInitials = (name: string): string => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    await logout();
+    setShowProfileMenu(false);
+  };
+
+  // Handle profile edit
+  const handleEditProfile = () => {
+    setShowProfileModal(true);
+    setShowProfileMenu(false);
+  };
   return (
     <div className="flex items-center justify-between p-6 relative z-40">
       
@@ -153,16 +184,88 @@ export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
             Create
           </button>
         </div>
-        <div 
-          className="w-12 h-12 rounded-full flex items-center justify-center text-white" 
-          style={{ 
-            background: 'linear-gradient(145deg, #F4C430 0%, #e6b800 50%, #F4C430 100%)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1)'
-          }}
-        >
-          <span className="text-xl">👤</span>
+        <div className="relative" ref={profileRef}>
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200" 
+            style={{ 
+              background: 'linear-gradient(145deg, #F4C430 0%, #e6b800 50%, #F4C430 100%)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            {user ? (
+              <span className="text-lg font-medium">{getUserInitials(user.name)}</span>
+            ) : (
+              <span className="text-xl">👤</span>
+            )}
+          </button>
+
+          {/* Profile Dropdown */}
+          {showProfileMenu && user && (
+            <div className="fixed top-20 right-6 w-64 rounded-xl shadow-xl overflow-hidden"
+              style={{ 
+                zIndex: 9999,
+                background: 'linear-gradient(145deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.1), 0 8px 25px rgba(0,0,0,0.15)'
+              }}
+            >
+              {/* Metallic reflection overlay */}
+              <div 
+                className="absolute inset-0 rounded-xl pointer-events-none"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.2) 100%)'
+                }}
+              ></div>
+              <div className="relative z-10">
+                {/* User Info Section */}
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                      style={{ background: 'linear-gradient(145deg, #F4C430 0%, #e6b800 50%, #F4C430 100%)' }}
+                    >
+                      {getUserInitials(user.name)}
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-800">{user.name}</h3>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Options */}
+                <div className="py-2">
+                  <button
+                    onClick={handleEditProfile}
+                    className="w-full px-4 py-3 text-left hover:bg-black hover:bg-opacity-5 flex items-center gap-3 transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="text-gray-700 font-medium">Edit Profile</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center gap-3 transition-colors text-red-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="font-medium">Logout</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Profile Modal */}
+      <ProfileModal 
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
     </div>
   );
 }

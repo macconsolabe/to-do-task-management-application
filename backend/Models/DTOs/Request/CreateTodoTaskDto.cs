@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using TodoApp.Models.Entities;
+using TaskStatus = TodoApp.Models.Entities.TaskStatus;
 
-namespace TodoApi.Models
+namespace TodoApp.Models.DTOs.Request
 {
     public class CreateTodoTaskDto
     {

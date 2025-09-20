@@ -47,19 +47,35 @@ A full-stack todo task management application built with .NET Core backend and R
 
 ## 🏗️ Architecture
 
-### Backend (.NET Core 8)
+### Backend (.NET Core 8) - Clean DTO Architecture
+
+**🏗️ Architectural Pattern:**
 ```
 backend/
 ├── Controllers/          # API controllers
-│   └── TodoTasksController.cs
-├── Models/              # Data models and DTOs
-│   ├── TodoTask.cs
-│   └── CreateTodoTaskDto.cs
-├── Data/                # Database context
+│   └── {Entity}Controller.cs
+├── Models/              # Clean separation architecture
+│   ├── Entities/        # 🗃️ Database entities (NEVER exposed to API)
+│   │   └── {Entity}.cs
+│   └── DTOs/           # 📦 API contracts (ONLY interface with frontend)
+│       ├── Request/    # 📥 Input DTOs (Create/Update operations)
+│       │   ├── Create{Entity}Dto.cs
+│       │   └── Update{Entity}Dto.cs
+│       └── Response/   # 📤 Output DTOs (API responses)
+│           └── {Entity}ResponseDto.cs
+├── Extensions/          # Entity ↔ DTO mapping utilities
+│   └── MappingExtensions.cs
+├── Data/               # Database context & configurations
 │   └── TodoContext.cs
-├── Properties/          # Launch settings
-└── Program.cs           # Application entry point
+└── Program.cs          # Application entry point
 ```
+
+**🛡️ DTO Pattern Rules:**
+- 🚫 **NEVER return entities directly** - Always use Response DTOs
+- ✅ **Clean separation** - Entities stay internal, DTOs are external contracts
+- 🔄 **Mapping layer** - Use extensions to convert between entities and DTOs
+- 🛡️ **Security first** - No accidental exposure of sensitive data
+- 📝 **When adding new features** - Follow the same Entity/DTO separation pattern
 
 ### Frontend (React + TypeScript) - SOC Architecture
 
@@ -204,7 +220,7 @@ Before running this application, make sure you have the following installed:
 |---------|-----|-------------|
 | **Frontend** | http://localhost:3000 | Production React build (Nginx) |
 | **Backend API** | http://localhost:5001 | Containerized REST API |
-| **DB Admin** | http://localhost:8080 | SQLite database management (Adminer) |
+| **DB Admin** | http://localhost:8080 | SQLite database management (SQLite Browser) |
 | **Health Check** | http://localhost:5001/api/health | API health status |
 
 ## 🔧 API Endpoints

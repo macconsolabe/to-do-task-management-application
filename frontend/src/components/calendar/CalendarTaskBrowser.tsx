@@ -1,5 +1,5 @@
 import type { TodoTask } from '../../services/api';
-import { useCalendarState } from '../../hooks/useCalendarState';
+import { useCalendarState } from '../../hooks/calendar/useCalendarState';
 import { DateNavigation } from '../ui/DateNavigation';
 import { CalendarCardCarousel } from '../taskcard/CalendarCardCarousel';
 

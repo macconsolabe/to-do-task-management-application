@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TodoApi.Models
+namespace TodoApp.Models.Entities
 {
     public class TodoTask
     {
@@ -27,6 +27,9 @@ namespace TodoApi.Models
 
         // Manual progress (0-100) - used when no subtasks exist
         public int ManualProgress { get; set; } = 0;
+
+        // Foreign key for User relationship
+        public int? UserId { get; set; }
 
         // Navigation property for subtasks
         public ICollection<Subtask> Subtasks { get; set; } = new List<Subtask>();

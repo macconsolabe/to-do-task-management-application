@@ -1,9 +1,9 @@
 import type { TodoTask, UpdateTaskDto } from '../../services/api';
 
 // Hooks
-import { useTaskDetailState } from '../../hooks/useTaskDetailState';
-import { useTaskDetailEditing } from '../../hooks/useTaskDetailEditing';
-import { useTaskDetailActions } from '../../hooks/useTaskDetailActions';
+import { useTaskDetailState } from '../../hooks/tasks/useTaskDetailState';
+import { useTaskDetailEditing } from '../../hooks/tasks/useTaskDetailEditing';
+import { useTaskDetailActions } from '../../hooks/tasks/useTaskDetailActions';
 
 // Components
 import { TaskDetailHeader } from './TaskDetailHeader';
