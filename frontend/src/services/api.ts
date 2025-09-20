@@ -1,4 +1,32 @@
 // API service for eTask application
+
+// User interfaces
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  tasks?: TodoTask[];
+}
+
+export interface CreateUserDto {
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+}
+
+export interface UpdateUserDto {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+}
+
+// Task interfaces
 export interface Subtask {
   id: number;
   title: string;
@@ -19,6 +47,7 @@ export interface TodoTask {
   createdAt: string;
   updatedAt: string;
   manualProgress: number;
+  userId?: number;
   subtasks: Subtask[];
 }
 
@@ -209,6 +238,86 @@ class ApiService {
       throw new Error(`Failed to update task progress: ${errorData}`);
     }
     return response.json();
+  }
+
+  // User API methods
+  async getUsers(): Promise<User[]> {
+    const response = await fetch(`${this.baseUrl}/Users`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch users: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getCurrentUser(): Promise<User | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/Users/current`);
+      if (response.status === 404) {
+        return null; // No user found
+      }
+      if (!response.ok) {
+        throw new Error(`Failed to fetch current user: ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      return null;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/Users/by-email/${encodeURIComponent(email)}`);
+      if (response.status === 404) {
+        return null; // User not found
+      }
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user: ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error fetching user by email:', error);
+      return null;
+    }
+  }
+
+  async createUser(userData: CreateUserDto): Promise<User> {
+    const response = await fetch(`${this.baseUrl}/Users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to create user: ${errorData}`);
+    }
+    return response.json();
+  }
+
+  async updateUser(userId: number, userData: UpdateUserDto): Promise<User> {
+    const response = await fetch(`${this.baseUrl}/Users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to update user: ${errorData}`);
+    }
+    return response.json();
+  }
+
+  async deleteUser(userId: number): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/Users/${userId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to delete user: ${response.statusText}`);
+    }
   }
 }
 

@@ -27,19 +27,18 @@ services:
     networks:
       - todo-network
 
-  # Database Management UI (Adminer)
+  # Database Management UI (SQLite Browser)
   db-admin:
-    image: adminer:4.8.1
+    image: coleifer/sqlite-web
     ports:
       - "8080:8080"
-    environment:
-      - ADMINER_DEFAULT_SERVER=sqlite:///data/todos.db
     volumes:
       - ./data:/data
     networks:
       - todo-network
     depends_on:
       - backend
+    command: sqlite_web -H 0.0.0.0 -x /data/ezratask.db
 
 networks:
   todo-network:

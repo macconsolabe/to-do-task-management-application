@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
-using TodoApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +14,7 @@ builder.Services.AddSwaggerGen();
 
 // Add Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Data Source=data/todos.db";
+    ?? "Data Source=data/ezratask.db";
 builder.Services.AddDbContext<TodoContext>(options =>
     options.UseSqlite(connectionString));
 

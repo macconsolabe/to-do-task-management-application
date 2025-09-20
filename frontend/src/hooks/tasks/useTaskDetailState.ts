@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TodoTask } from '../services/api';
+import type { TodoTask } from '../../services/api';
 
 export function useTaskDetailState(task: TodoTask | null, isOpen: boolean) {
   const [localTask, setLocalTask] = useState<TodoTask | null>(null);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
-import type { TodoTask, CreateTaskDto } from '../services/api';
+import { apiService } from '../../services/api';
+import type { TodoTask, CreateTaskDto } from '../../services/api';
 
 export function useTasks() {
   const [tasks, setTasks] = useState<TodoTask[]>([]);

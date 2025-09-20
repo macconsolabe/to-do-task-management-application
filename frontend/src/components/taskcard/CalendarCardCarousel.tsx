@@ -1,6 +1,6 @@
 import type { TodoTask } from '../../services/api';
 import { CalendarCard } from './CalendarCard';
-import { useCarousel } from '../../hooks/useCarousel';
+import { useCarousel } from '../../hooks/ui/useCarousel';
 
 interface CalendarCardCarouselProps {
   tasks: TodoTask[];
