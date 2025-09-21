@@ -6,9 +6,10 @@ interface EditableDescriptionProps {
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
   onTaskUpdate: (updatedTask: TodoTask) => void;
+  onShowNotification?: (message: string, type: 'success' | 'error') => void;
 }
 
-export function EditableDescription({ task, isEditing, setIsEditing, onTaskUpdate }: EditableDescriptionProps) {
+export function EditableDescription({ task, isEditing, setIsEditing, onTaskUpdate, onShowNotification }: EditableDescriptionProps) {
   const handleDescriptionEdit = async (newDescription: string) => {
     if (!task || newDescription.trim() === task.description) {
       setIsEditing(false);
@@ -26,8 +27,10 @@ export function EditableDescription({ task, isEditing, setIsEditing, onTaskUpdat
       const updatedTask = await apiService.updateTask(task.id, updateData);
       onTaskUpdate(updatedTask);
       setIsEditing(false);
+      onShowNotification?.('Description updated ✓', 'success');
     } catch (error) {
       console.error('Failed to update description:', error);
+      onShowNotification?.('Failed to update description', 'error');
     }
   };
 

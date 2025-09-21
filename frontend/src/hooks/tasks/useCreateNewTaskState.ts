@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/api';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface FormData {
   title: string;
@@ -18,11 +19,13 @@ interface UseCreateNewTaskStateProps {
 }
 
 export function useCreateNewTaskState({ task, isOpen, onSubmit, onClose }: UseCreateNewTaskStateProps) {
+  const { settings } = useSettings();
+  
   const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
-    priority: 1,
-    status: 0,
+    priority: settings.tasks.defaultPriority,
+    status: settings.tasks.defaultStatus,
     dueDate: '',
     manualProgress: 0
   });
@@ -45,8 +48,8 @@ export function useCreateNewTaskState({ task, isOpen, onSubmit, onClose }: UseCr
       setFormData({
         title: '',
         description: '',
-        priority: 1,
-        status: 0,
+        priority: settings.tasks.defaultPriority,
+        status: settings.tasks.defaultStatus,
         dueDate: '',
         manualProgress: 0
       });
@@ -57,15 +60,18 @@ export function useCreateNewTaskState({ task, isOpen, onSubmit, onClose }: UseCr
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
+      // Store original overflow value
+      const originalOverflow = document.body.style.overflow;
+      
+      // Apply scroll lock smoothly
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      
+      // Cleanup function
+      return () => {
+        // Restore original overflow value
+        document.body.style.overflow = originalOverflow;
+      };
     }
-    
-    // Cleanup on unmount
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen]);
 
   const validateForm = () => {

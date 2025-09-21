@@ -1,5 +1,6 @@
 import type { TodoTask } from '../../services/api';
 import { apiService } from '../../services/api';
+import { useNotificationCenter } from '../../contexts/NotificationCenterContext';
 
 interface SubtasksSectionProps {
   task: TodoTask;
@@ -11,6 +12,7 @@ interface SubtasksSectionProps {
   setIsAddingSubtask: (adding: boolean) => void;
   onTaskUpdate: (updatedTask: TodoTask) => void;
   onSubtaskToggle: (subtaskId: number) => void;
+  onShowNotification?: (message: string, type: 'success' | 'error') => void;
 }
 
 export function SubtasksSection({ 
@@ -22,8 +24,10 @@ export function SubtasksSection({
   isAddingSubtask, 
   setIsAddingSubtask,
   onTaskUpdate,
-  onSubtaskToggle
+  onSubtaskToggle,
+  onShowNotification
 }: SubtasksSectionProps) {
+  const { addNotification } = useNotificationCenter();
   const handleSubtaskEdit = async (subtaskId: number, newTitle: string) => {
     if (!newTitle.trim()) return;
     
@@ -34,8 +38,10 @@ export function SubtasksSection({
       const updatedTask = await apiService.getTask(task.id);
       onTaskUpdate(updatedTask);
       setEditingSubtask(null);
+      onShowNotification?.('Subtask updated ✓', 'success');
     } catch (error) {
       console.error('Failed to update subtask:', error);
+      onShowNotification?.('Failed to update subtask', 'error');
     }
   };
 
@@ -46,8 +52,10 @@ export function SubtasksSection({
       // Refresh the task to get updated subtasks
       const updatedTask = await apiService.getTask(task.id);
       onTaskUpdate(updatedTask);
+      onShowNotification?.('Subtask deleted ✓', 'success');
     } catch (error) {
       console.error('Failed to delete subtask:', error);
+      onShowNotification?.('Failed to delete subtask', 'error');
     }
   };
 
@@ -57,9 +65,9 @@ export function SubtasksSection({
     try {
       const newOrder = task.subtasks ? task.subtasks.length : 0;
       await apiService.createSubtask({
-        title: newSubtaskTitle.trim(),
-        todoTaskId: task.id,
-        order: newOrder
+        Title: newSubtaskTitle.trim(),
+        TodoTaskId: task.id,
+        Order: newOrder
       });
       
       // Refresh the task to get updated subtasks
@@ -67,18 +75,32 @@ export function SubtasksSection({
       onTaskUpdate(updatedTask);
       setNewSubtaskTitle('');
       setIsAddingSubtask(false);
+      onShowNotification?.('Subtask added ✓', 'success');
+      
+      // Add to notification center
+      addNotification({
+        type: 'subtask_added',
+        title: 'Subtask Added',
+        message: `"${task.title}" - Added subtask: "${newSubtaskTitle.trim()}"`,
+        taskId: task.id,
+        taskTitle: task.title
+      });
     } catch (error) {
       console.error('Failed to add subtask:', error);
+      onShowNotification?.('Failed to add subtask', 'error');
     }
   };
 
-  if (!task.subtasks || task.subtasks.length === 0) return null;
+  const hasSubtasks = task.subtasks && task.subtasks.length > 0;
 
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between mb-3">
         <h5 className="text-md font-medium text-gray-800">
-          Subtasks ({task.subtasks.filter(s => s.isCompleted).length}/{task.subtasks.length})
+          {hasSubtasks 
+            ? `Subtasks (${task.subtasks.filter(s => s.isCompleted).length}/${task.subtasks.length})`
+            : 'Subtasks (0)'
+          }
         </h5>
         <button
           onClick={() => setIsAddingSubtask(true)}
@@ -89,7 +111,7 @@ export function SubtasksSection({
       </div>
       
       <div className="space-y-2">
-        {task.subtasks.map((subtask) => (
+        {hasSubtasks && task.subtasks.map((subtask) => (
           <div key={subtask.id} className="flex items-center gap-3 p-2 hover:bg-white rounded-lg transition-colors group">
             <button
               onClick={() => onSubtaskToggle(subtask.id)}

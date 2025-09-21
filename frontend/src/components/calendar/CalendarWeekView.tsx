@@ -1,4 +1,6 @@
 import type { TodoTask } from '../../services/api';
+import { getWeekStartDay } from '../../utils/dateUtils';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface CalendarWeekViewProps {
   date: Date;
@@ -9,10 +11,15 @@ interface CalendarWeekViewProps {
 }
 
 export function CalendarWeekView({ date, tasks, onTaskClick, onDateChange, onDayClick }: CalendarWeekViewProps) {
-  // Get the start of the week (Sunday)
+  const { settings } = useSettings();
+  
+  // Get the start of the week (respects user preference)
   const getWeekStart = (date: Date) => {
     const start = new Date(date);
-    start.setDate(start.getDate() - start.getDay());
+    const weekStartDay = getWeekStartDay(settings.calendar);
+    const currentDay = start.getDay();
+    const daysToSubtract = (currentDay - weekStartDay + 7) % 7;
+    start.setDate(start.getDate() - daysToSubtract);
     return start;
   };
 
@@ -86,7 +93,9 @@ export function CalendarWeekView({ date, tasks, onTaskClick, onDateChange, onDay
       <div className="flex-1 grid grid-cols-7 gap-2">
         {weekDays.map((day, index) => {
           const dayTasks = getTasksForDate(day);
-          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const dayNames = settings.calendar.weekStartDay === 'monday' 
+            ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
           
           return (
             <div

@@ -1,14 +1,18 @@
+import { useTheme } from '../../hooks/ui/useTheme';
+
 interface TaskTabsProps {
-  activeTab: 'todo' | 'important' | 'notes' | 'completed';
-  onTabChange: (tab: 'todo' | 'important' | 'notes' | 'completed') => void;
+  activeTab: 'todo' | 'inprogress' | 'completed' | 'important';
+  onTabChange: (tab: 'todo' | 'inprogress' | 'completed' | 'important') => void;
 }
 
 export function TaskTabs({ activeTab, onTabChange }: TaskTabsProps) {
+  const { accentColor } = useTheme();
+  
   const tabs = [
-    { key: 'todo', label: 'To-Do' },
-    { key: 'important', label: 'Important' },
-    { key: 'notes', label: 'Notes' },
-    { key: 'completed', label: 'Completed' }
+    { key: 'todo', label: 'To Do' },
+    { key: 'inprogress', label: 'In Progress' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'important', label: 'Important' }
   ];
 
   return (
@@ -16,15 +20,15 @@ export function TaskTabs({ activeTab, onTabChange }: TaskTabsProps) {
       {tabs.map(({ key, label }) => (
         <button
           key={key}
-          onClick={() => onTabChange(key as 'todo' | 'important' | 'notes' | 'completed')}
+          onClick={() => onTabChange(key as 'todo' | 'inprogress' | 'completed' | 'important')}
           className={`pb-3 px-1 font-light transition-colors ${
             activeTab === key 
               ? 'border-b-2 text-gray-900' 
               : 'text-gray-500 hover:text-gray-700'
           }`}
           style={{ 
-            borderColor: activeTab === key ? '#F4C430' : 'transparent',
-            color: activeTab === key ? '#F4C430' : undefined
+            borderColor: activeTab === key ? accentColor : 'transparent',
+            color: activeTab === key ? accentColor : undefined
           }}
         >
           {label}

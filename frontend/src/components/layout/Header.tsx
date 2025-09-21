@@ -1,20 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import ezraLogo from '../../assets/ezralogo.png';
 import { useUser } from '../../contexts/UserContext';
+import { useSettings } from '../../contexts/SettingsContext';
+import { useHelp } from '../../contexts/HelpContext';
 import { ProfileModal } from '../profile/ProfileModal';
+import { NotificationToggle } from '../notifications/NotificationToggle';
 
 interface HeaderProps {
   onCreateClick: () => void;
   onCalendarClick?: () => void;
+  onProfileModalChange?: (isOpen: boolean) => void;
 }
 
-export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
+export function Header({ onCreateClick, onCalendarClick, onProfileModalChange }: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useUser();
+  const { setIsSettingsOpen } = useSettings();
+  const { setIsHelpOpen } = useHelp();
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -56,9 +62,16 @@ export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
   const handleEditProfile = () => {
     setShowProfileModal(true);
     setShowProfileMenu(false);
+    onProfileModalChange?.(true);
+  };
+
+  // Handle profile modal close
+  const handleProfileModalClose = () => {
+    setShowProfileModal(false);
+    onProfileModalChange?.(false);
   };
   return (
-    <div className="flex items-center justify-between p-6 relative z-40">
+    <div className="fixed top-0 left-0 right-0 flex items-center justify-between p-6 z-40">
       
       <div className="relative z-10 flex items-center justify-between w-full">
         {/* Menu with 4 dots and logo */}
@@ -109,7 +122,7 @@ export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
                   </button>
                   <button
                     onClick={() => {
-                      // Future: Add settings functionality
+                      setIsSettingsOpen(true);
                       setShowMenu(false);
                     }}
                     className="w-full px-4 py-3 text-left hover:bg-black hover:bg-opacity-5 flex items-center gap-3 transition-colors"
@@ -122,7 +135,7 @@ export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
                   </button>
                   <button
                     onClick={() => {
-                      // Future: Add help functionality
+                      setIsHelpOpen(true);
                       setShowMenu(false);
                     }}
                     className="w-full px-4 py-3 text-left hover:bg-black hover:bg-opacity-5 flex items-center gap-3 transition-colors last:rounded-b-xl"
@@ -184,7 +197,12 @@ export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
             Create
           </button>
         </div>
-        <div className="relative" ref={profileRef}>
+        
+        {/* Right side - Notifications and Profile */}
+        <div className="flex items-center gap-3">
+          <NotificationToggle />
+          
+          <div className="relative" ref={profileRef}>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200" 
@@ -258,13 +276,14 @@ export function Header({ onCreateClick, onCalendarClick }: HeaderProps) {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
       {/* Profile Modal */}
       <ProfileModal 
         isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
+        onClose={handleProfileModalClose}
       />
     </div>
   );

@@ -6,7 +6,7 @@ interface TaskDetailHeaderProps {
   setShowTaskMenu: (show: boolean) => void;
   onClose: () => void;
   onMarkComplete: () => void;
-  onToggleImportance: (id: number) => void;
+  onToggleImportance: () => void;
   onDelete: () => void;
   onCalendarClick?: (date: Date) => void;
 }
@@ -75,10 +75,7 @@ export function TaskDetailHeader({
                 </button>
               )}
               <button
-                onClick={() => {
-                  onToggleImportance(task.id);
-                  setShowTaskMenu(false);
-                }}
+                onClick={onToggleImportance}
                 className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
               >
                 <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">

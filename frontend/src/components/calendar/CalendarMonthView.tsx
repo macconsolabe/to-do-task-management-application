@@ -1,4 +1,6 @@
 import type { TodoTask } from '../../services/api';
+import { getWeekStartDay } from '../../utils/dateUtils';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface CalendarMonthViewProps {
   date: Date;
@@ -9,13 +11,17 @@ interface CalendarMonthViewProps {
 }
 
 export function CalendarMonthView({ date, tasks, onTaskClick, onDateChange, onDayClick }: CalendarMonthViewProps) {
+  const { settings } = useSettings();
   const currentMonth = date.getMonth();
   const currentYear = date.getFullYear();
 
   // Get first day of month and calculate calendar grid
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
   const startDate = new Date(firstDayOfMonth);
-  startDate.setDate(startDate.getDate() - startDate.getDay()); // Start from Sunday
+  const weekStartDay = getWeekStartDay(settings.calendar);
+  const firstDayOfWeek = firstDayOfMonth.getDay();
+  const daysToSubtract = (firstDayOfWeek - weekStartDay + 7) % 7;
+  startDate.setDate(startDate.getDate() - daysToSubtract);
 
   const calendarDays = [];
   const currentDate = new Date(startDate);
@@ -59,7 +65,9 @@ export function CalendarMonthView({ date, tasks, onTaskClick, onDateChange, onDa
     return checkDate.getMonth() === currentMonth;
   };
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = settings.calendar.weekStartDay === 'monday' 
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="p-6 h-full flex flex-col">

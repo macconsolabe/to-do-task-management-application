@@ -21,7 +21,9 @@ export function useCreateNewTaskSubtasks({ task, isOpen }: UseCreateNewTaskSubta
 
   const addSubtask = () => {
     if (newSubtaskTitle.trim()) {
-      setSubtasks(prev => [...prev, newSubtaskTitle.trim()]);
+      const newSubtasks = [...subtasks, newSubtaskTitle.trim()];
+      console.log('Adding subtask:', newSubtaskTitle.trim(), 'Total subtasks:', newSubtasks);
+      setSubtasks(newSubtasks);
       setNewSubtaskTitle('');
     }
   };

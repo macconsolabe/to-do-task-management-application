@@ -5,8 +5,8 @@ import { EmptyState } from '../ui/EmptyState';
 
 interface TaskListProps {
   tasks: TodoTask[];
-  activeTab: 'todo' | 'important' | 'notes' | 'completed';
-  onTabChange: (tab: 'todo' | 'important' | 'notes' | 'completed') => void;
+  activeTab: 'todo' | 'inprogress' | 'completed' | 'important';
+  onTabChange: (tab: 'todo' | 'inprogress' | 'completed' | 'important') => void;
   onTaskClick: (task: TodoTask) => void;
   onStatusChange: (id: number, status: number) => void;
   onDelete: (id: number) => void;

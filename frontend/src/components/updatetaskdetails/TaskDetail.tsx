@@ -1,4 +1,5 @@
 import type { TodoTask, UpdateTaskDto } from '../../services/api';
+import { apiService } from '../../services/api';
 
 // Hooks
 import { useTaskDetailState } from '../../hooks/tasks/useTaskDetailState';
@@ -19,9 +20,9 @@ interface TaskDetailProps {
   onClose: () => void;
   onDelete: (id: number) => void;
   onStatusChange: (id: number, status: number) => void;
-  onToggleImportance: (id: number) => void;
   onTaskUpdate: (updatedTask: TodoTask) => void;
   onCalendarClick?: (date: Date) => void;
+  onShowNotification?: (message: string, type: 'success' | 'error') => void;
 }
 
 export function TaskDetail({ 
@@ -30,9 +31,9 @@ export function TaskDetail({
   onClose, 
   onDelete, 
   onStatusChange, 
-  onToggleImportance,
   onTaskUpdate,
-  onCalendarClick
+  onCalendarClick,
+  onShowNotification
 }: TaskDetailProps) {
   // Custom hooks
   const { localTask, setLocalTask, isAnimating } = useTaskDetailState(task, isOpen);
@@ -62,7 +63,7 @@ export function TaskDetail({
   };
 
   const handleSubtaskToggleWrapper = (subtaskId: number) => {
-    handleSubtaskToggle(subtaskId, localTask, setLocalTask, onTaskUpdate, task);
+    handleSubtaskToggle(subtaskId, localTask, setLocalTask, onTaskUpdate, task, onShowNotification);
   };
 
   const handleManualProgressWrapper = (progress: number) => {
@@ -73,10 +74,33 @@ export function TaskDetail({
     handleFieldEdit(field, value, localTask, setLocalTask, onTaskUpdate, resetEditingStates);
   };
 
+  const handleToggleImportanceWrapper = async () => {
+    try {
+      const updatedTask = await apiService.toggleTaskImportance(localTask.id);
+      setLocalTask(updatedTask);
+      onTaskUpdate(updatedTask);
+      setShowTaskMenu(false);
+      
+      // Show notification
+      const isNowImportant = updatedTask.priority === 2;
+      onShowNotification?.(
+        isNowImportant ? 'Task marked as Important ⭐' : 'Task removed from Important 📝', 
+        'success'
+      );
+    } catch (err) {
+      console.error('Failed to toggle importance:', err);
+      onShowNotification?.('Failed to update task importance', 'error');
+      setShowTaskMenu(false);
+    }
+  };
+
   return (
-    <div className={`fixed inset-0 bg-black flex items-center justify-center p-4 z-50 transition-all duration-300 ${
-      isOpen ? 'bg-opacity-50' : 'bg-opacity-0'
-    }`}>
+    <div 
+      className={`fixed inset-0 bg-black flex items-center justify-center p-4 z-50 transition-all duration-300 ${
+        isOpen ? 'bg-opacity-50' : 'bg-opacity-0'
+      }`}
+      onClick={onClose}
+    >
       <div 
         className={`rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 transform relative ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
@@ -85,6 +109,7 @@ export function TaskDetail({
           background: 'linear-gradient(145deg, #e8eaed 0%, #d1d5db 30%, #f1f3f4 70%, #e8eaed 100%)',
           boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 4px rgba(0,0,0,0.15), 0 20px 40px rgba(0,0,0,0.2)'
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Metallic reflection overlay */}
         <div 
@@ -120,7 +145,7 @@ export function TaskDetail({
                 }
                 setShowTaskMenu(false);
               }}
-              onToggleImportance={onToggleImportance}
+              onToggleImportance={handleToggleImportanceWrapper}
               onDelete={() => {
                 onDelete(localTask.id);
                 setShowTaskMenu(false);
@@ -128,12 +153,13 @@ export function TaskDetail({
               onCalendarClick={onCalendarClick}
             />
             
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 pb-32">
               <EditableTitle
                 task={localTask}
                 isEditing={isEditingTitle}
                 setIsEditing={setIsEditingTitle}
                 onTaskUpdate={handleTaskUpdate}
+                onShowNotification={onShowNotification}
               />
 
               <EditableDescription
@@ -141,11 +167,13 @@ export function TaskDetail({
                 isEditing={isEditingDescription}
                 setIsEditing={setIsEditingDescription}
                 onTaskUpdate={handleTaskUpdate}
+                onShowNotification={onShowNotification}
               />
 
               <TaskProgressSection
                 task={localTask}
                 onManualProgressChange={handleManualProgressWrapper}
+                onShowNotification={onShowNotification}
               />
 
               <SubtasksSection
@@ -158,6 +186,7 @@ export function TaskDetail({
                 setIsAddingSubtask={setIsAddingSubtask}
                 onTaskUpdate={handleTaskUpdate}
                 onSubtaskToggle={handleSubtaskToggleWrapper}
+                onShowNotification={onShowNotification}
               />
 
               <TaskMetadata
@@ -173,6 +202,7 @@ export function TaskDetail({
                 showPriorityDropdown={showPriorityDropdown}
                 setShowPriorityDropdown={setShowPriorityDropdown}
                 onFieldEdit={handleFieldEditWrapper}
+                onShowNotification={onShowNotification}
               />
 
               {/* Last Updated */}

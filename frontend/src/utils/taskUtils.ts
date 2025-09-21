@@ -20,10 +20,10 @@ export const getProgressColor = (): string => {
 
 export const filterTasks = (tasks: TodoTask[], activeTab: string): TodoTask[] => {
   switch (activeTab) {
-    case 'todo': return tasks.filter(task => task.status !== 2);
-    case 'important': return tasks.filter(task => task.priority === 2);
-    case 'completed': return tasks.filter(task => task.status === 2);
-    case 'notes': return tasks.filter(task => task.description.length > 0);
+    case 'todo': return tasks.filter(task => task.status === 0); // Only To Do status
+    case 'inprogress': return tasks.filter(task => task.status === 1); // Only In Progress status
+    case 'completed': return tasks.filter(task => task.status === 2); // Only Completed status
+    case 'important': return tasks.filter(task => task.priority === 2); // High priority tasks
     default: return tasks;
   }
 };
@@ -56,4 +56,26 @@ export const getProgressExplanation = (task: TodoTask): string => {
   }
   
   return `Manual progress set by user (${task.manualProgress}%)`;
+};
+
+export const sortTasks = (tasks: TodoTask[], sortBy: 'createdAt' | 'dueDate' | 'priority' | 'title'): TodoTask[] => {
+  const sortedTasks = [...tasks];
+  
+  switch (sortBy) {
+    case 'createdAt':
+      return sortedTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    case 'dueDate':
+      return sortedTasks.sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      });
+    case 'priority':
+      return sortedTasks.sort((a, b) => b.priority - a.priority); // High to Low
+    case 'title':
+      return sortedTasks.sort((a, b) => a.title.localeCompare(b.title));
+    default:
+      return sortedTasks;
+  }
 };

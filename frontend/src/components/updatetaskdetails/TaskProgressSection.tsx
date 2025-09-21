@@ -4,9 +4,10 @@ import { getProgressPercentage, getProgressExplanation } from '../../utils/taskU
 interface TaskProgressSectionProps {
   task: TodoTask;
   onManualProgressChange: (progress: number) => void;
+  onShowNotification?: (message: string, type: 'success' | 'error') => void;
 }
 
-export function TaskProgressSection({ task, onManualProgressChange }: TaskProgressSectionProps) {
+export function TaskProgressSection({ task, onManualProgressChange, onShowNotification }: TaskProgressSectionProps) {
   const progress = getProgressPercentage(task);
 
   return (
@@ -31,7 +32,11 @@ export function TaskProgressSection({ task, onManualProgressChange }: TaskProgre
               min="0"
               max="100"
               value={task.manualProgress}
-              onChange={(e) => onManualProgressChange(parseInt(e.target.value))}
+              onChange={(e) => {
+                const newProgress = parseInt(e.target.value);
+                onManualProgressChange(newProgress);
+                onShowNotification?.(`Progress updated to ${newProgress}% ✓`, 'success');
+              }}
               className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
               style={{
                 background: `linear-gradient(to right, #F4C430 0%, #F4C430 ${progress}%, #e5e7eb ${progress}%, #e5e7eb 100%)`

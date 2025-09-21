@@ -1,14 +1,17 @@
 import type { TodoTask, UpdateTaskDto } from '../../services/api';
 import { apiService } from '../../services/api';
+import { useNotificationCenter } from '../../contexts/NotificationCenterContext';
 
 interface EditableTitleProps {
   task: TodoTask;
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
   onTaskUpdate: (updatedTask: TodoTask) => void;
+  onShowNotification?: (message: string, type: 'success' | 'error') => void;
 }
 
-export function EditableTitle({ task, isEditing, setIsEditing, onTaskUpdate }: EditableTitleProps) {
+export function EditableTitle({ task, isEditing, setIsEditing, onTaskUpdate, onShowNotification }: EditableTitleProps) {
+  const { addNotification } = useNotificationCenter();
   const handleTitleEdit = async (newTitle: string) => {
     if (!task || newTitle.trim() === task.title) {
       setIsEditing(false);
@@ -26,8 +29,19 @@ export function EditableTitle({ task, isEditing, setIsEditing, onTaskUpdate }: E
       const updatedTask = await apiService.updateTask(task.id, updateData);
       onTaskUpdate(updatedTask);
       setIsEditing(false);
+      onShowNotification?.('Title updated ✓', 'success');
+      
+      // Add to notification center
+      addNotification({
+        type: 'title_updated',
+        title: 'Task Title Updated',
+        message: `Changed title to "${newTitle.trim()}"`,
+        taskId: task.id,
+        taskTitle: newTitle.trim()
+      });
     } catch (error) {
       console.error('Failed to update title:', error);
+      onShowNotification?.('Failed to update title', 'error');
     }
   };
 
