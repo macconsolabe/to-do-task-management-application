@@ -1,5 +1,7 @@
 import type { TodoTask } from '../../services/api';
 
+import { useTheme } from '../../hooks/ui/useTheme';
+
 interface CreateNewTaskActionsProps {
   task?: TodoTask;
   isSubmitting: boolean;
@@ -7,6 +9,7 @@ interface CreateNewTaskActionsProps {
 }
 
 export function CreateNewTaskActions({ task, isSubmitting, onClose }: CreateNewTaskActionsProps) {
+  const { accentGradient, reflectionOverlay } = useTheme();
   return (
     <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
       <button
@@ -33,16 +36,15 @@ export function CreateNewTaskActions({ task, isSubmitting, onClose }: CreateNewT
         disabled={isSubmitting}
         className="px-6 py-3 text-sm font-medium text-white rounded-2xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 relative overflow-hidden"
         style={{ 
-          background: 'linear-gradient(145deg, #F4C430 0%, #e6b800 50%, #F4C430 100%)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1)',
-          '--tw-ring-color': '#F4C430'
-        } as any}
+          background: accentGradient,
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1)'
+        }}
       >
         {/* Metallic reflection overlay */}
         <div 
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.1) 100%)'
+            background: reflectionOverlay
           }}
         ></div>
         <div className="relative z-10 flex items-center gap-2">

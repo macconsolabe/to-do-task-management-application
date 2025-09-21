@@ -1,5 +1,8 @@
 import type { TodoTask, UpdateTaskDto } from '../../services/api';
 import { getStatusLabel, getPriorityLabel } from '../../utils/taskUtils';
+import { formatDateLong, shouldHighlightOverdue } from '../../utils/dateUtils';
+import { useSettings } from '../../contexts/SettingsContext';
+import { useNotificationCenter } from '../../contexts/NotificationCenterContext';
 
 interface TaskMetadataProps {
   task: TodoTask;
@@ -14,6 +17,7 @@ interface TaskMetadataProps {
   showPriorityDropdown: boolean;
   setShowPriorityDropdown: (show: boolean) => void;
   onFieldEdit: (field: keyof UpdateTaskDto, value: any) => void;
+  onShowNotification?: (message: string, type: 'success' | 'error') => void;
 }
 
 export function TaskMetadata({ 
@@ -28,16 +32,73 @@ export function TaskMetadata({
   setShowStatusDropdown,
   showPriorityDropdown, 
   setShowPriorityDropdown,
-  onFieldEdit 
+  onFieldEdit,
+  onShowNotification 
 }: TaskMetadataProps) {
-  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 2;
+  const { settings } = useSettings();
+  const { addNotification } = useNotificationCenter();
+  const isOverdue = shouldHighlightOverdue(task.dueDate, task.status, settings.calendar);
 
   const handleStatusSelect = (status: number) => {
     onFieldEdit('status', status);
+    const statusMessage = status === 0 ? 'Status changed to To Do ⏳' :
+                         status === 1 ? 'Status changed to In Progress 🚀' :
+                         'Status changed to Completed ✅';
+    onShowNotification?.(statusMessage, 'success');
+    
+    // Add to notification center
+    addNotification({
+      type: 'status_changed',
+      title: 'Task Status Changed',
+      message: `"${task.title}" - ${statusMessage.replace(/[⏳🚀✅]/g, '').trim()}`,
+      taskId: task.id,
+      taskTitle: task.title
+    });
   };
 
   const handlePrioritySelect = (priority: number) => {
     onFieldEdit('priority', priority);
+    const priorityMessage = priority === 0 ? 'Priority set to Low' :
+                           priority === 1 ? 'Priority set to Medium' :
+                           'Priority set to High (Important) ⭐';
+    onShowNotification?.(priorityMessage, 'success');
+    
+    // Add to notification center
+    addNotification({
+      type: 'priority_changed',
+      title: 'Task Priority Changed',
+      message: `"${task.title}" - ${priorityMessage.replace(/[⭐]/g, '').trim()}`,
+      taskId: task.id,
+      taskTitle: task.title
+    });
+  };
+
+  const handleDueDateChange = (value: string) => {
+    onFieldEdit('dueDate', value || null);
+    if (value) {
+      const date = new Date(value).toLocaleDateString();
+      onShowNotification?.(`Due date set to ${date} 📅`, 'success');
+      
+      // Add to notification center
+      addNotification({
+        type: 'due_date_changed',
+        title: 'Due Date Updated',
+        message: `"${task.title}" - Due date set to ${date}`,
+        taskId: task.id,
+        taskTitle: task.title
+      });
+    } else {
+      onShowNotification?.('Due date removed 📅', 'success');
+      
+      // Add to notification center
+      addNotification({
+        type: 'due_date_changed',
+        title: 'Due Date Removed',
+        message: `"${task.title}" - Due date removed from task`,
+        taskId: task.id,
+        taskTitle: task.title
+      });
+    }
   };
 
   return (
@@ -79,7 +140,7 @@ export function TaskMetadata({
               </button>
               
               {showStatusDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <button
                     onClick={() => handleStatusSelect(0)}
                     className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 first:rounded-t-lg"
@@ -155,7 +216,7 @@ export function TaskMetadata({
               </button>
               
               {showPriorityDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <button
                     onClick={() => handlePrioritySelect(0)}
                     className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 first:rounded-t-lg"
@@ -203,12 +264,7 @@ export function TaskMetadata({
         <div>
           <span className="text-sm font-medium text-gray-500">Created</span>
           <p className="font-light text-gray-800 mt-1">
-            {new Date(task.createdAt).toLocaleDateString('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+            {formatDateLong(task.createdAt, settings.calendar)}
           </p>
         </div>
         
@@ -229,7 +285,7 @@ export function TaskMetadata({
             <input
               type="date"
               value={task.dueDate ? task.dueDate.split('T')[0] : ''}
-              onChange={(e) => onFieldEdit('dueDate', e.target.value || null)}
+              onChange={(e) => handleDueDateChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
               style={{ '--tw-ring-color': '#F4C430' } as any}
               autoFocus
@@ -238,12 +294,7 @@ export function TaskMetadata({
             <div className="mt-1">
               {task.dueDate ? (
                 <p className={`font-light ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-800'}`}>
-                  {new Date(task.dueDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {formatDateLong(task.dueDate, settings.calendar)}
                   {isOverdue && ' (Overdue)'}
                 </p>
               ) : (

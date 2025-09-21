@@ -56,7 +56,7 @@ export function CreateNewTaskMetadataSection({
             </button>
             
             {showStatusDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                 <button
                   type="button"
                   onClick={() => {
@@ -124,7 +124,7 @@ export function CreateNewTaskMetadataSection({
             </button>
             
             {showPriorityDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                 <button
                   type="button"
                   onClick={() => {

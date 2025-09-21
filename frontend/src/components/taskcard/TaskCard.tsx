@@ -1,6 +1,7 @@
 import type { TodoTask } from '../../services/api';
 import { getProgressPercentage, getProgressColor } from '../../utils/taskUtils';
-import { formatTaskDate, formatTaskDateTime, isOverdue } from '../../utils/dateUtils';
+import { formatDate, shouldHighlightOverdue } from '../../utils/dateUtils';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface TaskCardProps {
   task: TodoTask;
@@ -10,8 +11,10 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onTaskClick, onStatusChange, onDelete }: TaskCardProps) {
+  const { settings } = useSettings();
   const progress = getProgressPercentage(task);
   const progressColor = getProgressColor();
+  const isOverdue = shouldHighlightOverdue(task.dueDate, task.status, settings.calendar);
 
   return (
     <div 
@@ -57,7 +60,7 @@ export function TaskCard({ task, onTaskClick, onStatusChange, onDelete }: TaskCa
             </div>
             <div className="flex justify-between items-center mt-2">
               <div className="text-sm text-gray-500 font-light">
-                <span className="font-medium">Created:</span> {formatTaskDate(task.createdAt)}
+                <span className="font-medium">Created:</span> {formatDate(task.createdAt, settings.calendar)}
               </div>
               <span className="text-lg font-light text-gray-600">{progress}%</span>
             </div>
@@ -70,9 +73,9 @@ export function TaskCard({ task, onTaskClick, onStatusChange, onDelete }: TaskCa
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="font-medium">Due:</span>
-              <span className={isOverdue(task.dueDate) ? 'text-red-600 font-medium' : ''}>
-                {formatTaskDateTime(task.dueDate)}
-                {isOverdue(task.dueDate) && ' (Overdue)'}
+              <span className={isOverdue ? 'text-red-600 font-medium' : ''}>
+                {formatDate(task.dueDate!, settings.calendar)}
+                {isOverdue && ' (Overdue)'}
               </span>
             </div>
           )}

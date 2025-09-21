@@ -68,9 +68,9 @@ export interface UpdateTaskDto {
 }
 
 export interface CreateSubtaskDto {
-  title: string;
-  todoTaskId: number;
-  order: number;
+  Title: string;
+  TodoTaskId: number;
+  Order: number;
 }
 
 class ApiService {

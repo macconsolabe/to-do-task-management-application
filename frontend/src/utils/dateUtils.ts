@@ -1,42 +1,56 @@
-export const formatDate = () => {
-  const today = new Date();
-  const day = today.getDate();
-  const month = today.toLocaleDateString('en-US', { month: 'short' });
-  const year = today.getFullYear();
+import type { CalendarSettings } from '../contexts/SettingsContext';
+
+export const formatDate = (date: Date | string, settings: CalendarSettings): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  const getDayWithSuffix = (day: number) => {
-    if (day > 3 && day < 21) return day + 'th';
-    switch (day % 10) {
-      case 1: return day + 'st';
-      case 2: return day + 'nd';
-      case 3: return day + 'rd';
-      default: return day + 'th';
-    }
-  };
+  if (settings.dateFormat === 'DD/MM/YYYY') {
+    return dateObj.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } else {
+    return dateObj.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    });
+  }
+};
+
+export const formatDateLong = (date: Date | string, settings: CalendarSettings): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   
-  return `${getDayWithSuffix(day)} ${month} ${year}`;
+  if (settings.dateFormat === 'DD/MM/YYYY') {
+    return dateObj.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } else {
+    return dateObj.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
 };
 
-export const formatTaskDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    month: 'short', 
-    day: 'numeric',
-    year: 'numeric'
-  });
-};
-
-export const formatTaskDateTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const dateStr = formatTaskDate(dateString);
-  const timeStr = date.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    timeZoneName: 'short'
-  });
-  return `${dateStr} | ${timeStr}`;
-};
-
-export const isOverdue = (dueDate: string) => {
+export const isOverdue = (dueDate: string | undefined, taskStatus: number): boolean => {
+  if (!dueDate || taskStatus === 2) return false; // No due date or completed task
   return new Date(dueDate) < new Date();
+};
+
+export const shouldHighlightOverdue = (
+  dueDate: string | undefined, 
+  taskStatus: number, 
+  settings: CalendarSettings
+): boolean => {
+  return settings.overdueHighlighting && isOverdue(dueDate, taskStatus);
+};
+
+export const getWeekStartDay = (settings: CalendarSettings): number => {
+  return settings.weekStartDay === 'monday' ? 1 : 0; // 0 = Sunday, 1 = Monday
 };

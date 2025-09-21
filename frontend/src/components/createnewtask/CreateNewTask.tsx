@@ -17,15 +17,30 @@ interface CreateNewTaskProps {
   isOpen: boolean;
   task?: TodoTask;
   onClose: () => void;
-  onSubmit: (data: CreateTaskDto | UpdateTaskDto) => Promise<void>;
+  onSubmit: (data: CreateTaskDto | UpdateTaskDto, subtasks: string[]) => Promise<void>;
 }
 
 export function CreateNewTask({ isOpen, task, onClose, onSubmit }: CreateNewTaskProps) {
   // Custom hooks
+  const {
+    subtasks,
+    newSubtaskTitle,
+    setNewSubtaskTitle,
+    addSubtask,
+    removeSubtask,
+    handleSubtaskKeyDown
+  } = useCreateNewTaskSubtasks({ task, isOpen });
+
+  // Wrapper to handle subtasks
+  const handleSubmitWithSubtasks = async (data: CreateTaskDto | UpdateTaskDto) => {
+    console.log('CreateNewTask: Submitting with subtasks:', subtasks);
+    await onSubmit(data, subtasks);
+  };
+
   const { formData, setFormData, isSubmitting, errors, handleChange, handleSubmit } = useCreateNewTaskState({
     task,
     isOpen,
-    onSubmit,
+    onSubmit: handleSubmitWithSubtasks,
     onClose
   });
 
@@ -36,15 +51,6 @@ export function CreateNewTask({ isOpen, task, onClose, onSubmit }: CreateNewTask
     setShowPriorityDropdown
   } = useCreateNewTaskDropdowns();
 
-  const {
-    subtasks,
-    newSubtaskTitle,
-    setNewSubtaskTitle,
-    addSubtask,
-    removeSubtask,
-    handleSubtaskKeyDown
-  } = useCreateNewTaskSubtasks({ task, isOpen });
-
   // Handle manual progress change
   const handleProgressChange = (progress: number) => {
     setFormData(prev => ({ ...prev, manualProgress: progress }));
@@ -52,41 +58,35 @@ export function CreateNewTask({ isOpen, task, onClose, onSubmit }: CreateNewTask
 
   if (!isOpen) return null;
 
+  // Handle click outside to close modal
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if clicking on the backdrop itself, not on any child elements
+    if (e.target === e.currentTarget) {
+      // Close any open dropdowns first
+      setShowStatusDropdown(false);
+      setShowPriorityDropdown(false);
+      // Then close the modal
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={handleBackdropClick}
+    >
       <div 
-        className="rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden relative"
+        className="bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
         style={{ 
-          background: 'linear-gradient(145deg, #e8eaed 0%, #d1d5db 30%, #f1f3f4 70%, #e8eaed 100%)',
-          boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 4px rgba(0,0,0,0.15), 0 20px 40px rgba(0,0,0,0.2)'
+          boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
         }}
       >
-        {/* Metallic reflection overlay */}
-        <div 
-          className="absolute inset-0 rounded-3xl pointer-events-none z-0"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 25%, transparent 75%, rgba(255,255,255,0.3) 100%)'
-          }}
-        ></div>
-        <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
-          <div 
-            className="rounded-t-3xl relative overflow-hidden"
-            style={{ 
-              background: 'linear-gradient(145deg, rgba(248,249,250,0.98) 0%, rgba(233,236,239,0.95) 50%, rgba(248,249,250,0.98) 100%)',
-              backdropFilter: 'blur(5px)'
-            }}
+        <div className="flex-1 overflow-y-auto">
+          <div className="rounded-t-3xl"
           >
-            {/* Inner content reflection */}
-            <div 
-              className="absolute inset-0 rounded-t-3xl pointer-events-none"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.2) 100%)'
-              }}
-            ></div>
-            <div className="relative z-10">
               <CreateNewTaskHeader task={task} onClose={onClose} />
               
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <form onSubmit={handleSubmit} className="p-6 space-y-6 pb-32">
                 {errors.submit && (
                   <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
                     {errors.submit}
@@ -131,7 +131,6 @@ export function CreateNewTask({ isOpen, task, onClose, onSubmit }: CreateNewTask
                   onClose={onClose}
                 />
               </form>
-            </div>
           </div>
         </div>
       </div>

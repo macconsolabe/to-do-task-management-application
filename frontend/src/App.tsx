@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import type { TodoTask, CreateTaskDto, UpdateTaskDto } from './services/api';
+import { apiService } from './services/api';
 
 // User System
 import { UserProvider, useUser } from './contexts/UserContext';
+import { SettingsProvider, useSettings } from './contexts/SettingsContext';
+import { HelpProvider, useHelp } from './contexts/HelpContext';
+import { NotificationCenterProvider, useNotificationCenter } from './contexts/NotificationCenterContext';
 import { WelcomeOnboarding } from './components/onboarding/WelcomeOnboarding';
 import { UserSelectionScreen } from './components/login/UserSelectionScreen';
 
@@ -14,9 +18,13 @@ import { TaskList } from './components/taskcard/TaskList';
 import { ErrorMessage } from './components/ui/ErrorMessage';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Notification } from './components/ui/Notification';
+import { ConfirmDialog } from './components/ui/ConfirmDialog';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { CreateNewTask } from './components/createnewtask/CreateNewTask';
 import { TaskDetail } from './components/updatetaskdetails/TaskDetail';
 import { CalendarModal } from './components/calendar/CalendarModal';
+import { SettingsModal } from './components/settings/SettingsModal';
+import { HelpModal } from './components/help/HelpModal';
 
 // Hooks
 import { useTasks } from './hooks/tasks/useTasks';
@@ -28,13 +36,28 @@ import { filterTasks } from './utils/taskUtils';
 
 function MainApp() {
   const { user } = useUser();
+  const { isSettingsOpen } = useSettings();
+  const { isHelpOpen } = useHelp();
+  const { addNotification } = useNotificationCenter();
   
   // State
-  const [activeTab, setActiveTab] = useState<'todo' | 'important' | 'notes' | 'completed'>('todo');
+  const [activeTab, setActiveTab] = useState<'todo' | 'inprogress' | 'completed' | 'important'>('todo');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TodoTask | undefined>();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarInitialDate, setCalendarInitialDate] = useState<Date>(new Date());
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   // Custom hooks
   const { 
@@ -44,8 +67,9 @@ function MainApp() {
     createTask, 
     deleteTask, 
     updateTaskStatus, 
-    toggleTaskImportance, 
-    updateTask 
+    updateTask,
+    updateTaskById,
+    loadTasks 
   } = useTasks();
   
   const { notification, showNotification } = useNotification();
@@ -56,7 +80,7 @@ function MainApp() {
   const todaysTasks = tasks.filter(task => task.status !== 2).length;
 
   // Handlers
-  const handleCreateTask = async (taskData: CreateTaskDto) => {
+  const handleCreateTaskWithSubtasks = async (taskData: CreateTaskDto, subtaskTitles: string[]) => {
     if (!user) {
       showNotification('Please log in to create tasks', 'error');
       return;
@@ -64,56 +88,114 @@ function MainApp() {
 
     try {
       const taskWithUser = { ...taskData, userId: user.id };
-      await createTask(taskWithUser);
+      const createdTask = await createTask(taskWithUser);
+      
+      console.log('Created task:', createdTask);
+      console.log('Subtasks to create:', subtaskTitles);
+      
+      // Create subtasks if any
+      if (subtaskTitles.length > 0) {
+        const subtaskPromises = subtaskTitles.map((title, index) => 
+          apiService.createSubtask({
+            Title: title,
+            TodoTaskId: createdTask.id,
+            Order: index
+          })
+        );
+        const createdSubtasks = await Promise.all(subtaskPromises);
+        console.log('Created subtasks:', createdSubtasks);
+        
+        // Refresh tasks to get the updated task with subtasks
+        await loadTasks();
+      }
+      
       showNotification('Task created successfully! 🎉', 'success');
+      
+      // Add to notification center
+      addNotification({
+        type: 'task_created',
+        title: 'New Task Created',
+        message: `Created "${taskWithUser.title}"`,
+        taskId: createdTask.id,
+        taskTitle: taskWithUser.title
+      });
     } catch (err) {
+      console.error('Error creating task with subtasks:', err);
       showNotification('Failed to create task', 'error');
       throw err;
     }
   };
 
-  const handleDeleteTask = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
 
-    try {
-      await deleteTask(id);
-      showNotification('Task deleted successfully! 🗑️', 'success');
-      if (selectedTask?.id === id) handleDetailClose();
-    } catch (err) {
-      showNotification('Failed to delete task', 'error');
-      console.error('Failed to delete task:', err);
-    }
+  const handleDeleteTask = (id: number) => {
+    const taskToDelete = tasks.find(t => t.id === id);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Task',
+      message: `Are you sure you want to delete "${taskToDelete?.title || 'this task'}"? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await deleteTask(id);
+          showNotification('Task deleted successfully! 🗑️', 'success');
+      
+      // Add to notification center
+      addNotification({
+        type: 'task_deleted',
+        title: 'Task Deleted',
+        message: `Deleted "${taskToDelete?.title || 'task'}"`,
+        taskTitle: taskToDelete?.title
+      });
+          if (selectedTask?.id === id) handleDetailClose();
+          setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        } catch (err) {
+          showNotification('Failed to delete task', 'error');
+          console.error('Failed to delete task:', err);
+          setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    });
   };
 
   const handleStatusChange = async (id: number, newStatus: number) => {
     try {
       await updateTaskStatus(id, newStatus);
-      showNotification('Task status updated! 🔄', 'success');
+      const statusMessage = newStatus === 0 ? 'Task moved to To Do ⏳' :
+                           newStatus === 1 ? 'Task moved to In Progress 🚀' :
+                           'Task marked as Completed ✅';
+      showNotification(statusMessage, 'success');
+      
+      // Add to notification center
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        addNotification({
+          type: 'status_changed',
+          title: 'Task Status Changed',
+          message: statusMessage.replace(/[⏳🚀✅]/g, '').trim(),
+          taskId: id,
+          taskTitle: task.title
+        });
+      }
     } catch (err) {
       showNotification('Failed to update task status', 'error');
       console.error('Failed to update task status:', err);
     }
   };
 
-  const handleToggleImportance = async (id: number) => {
-    try {
-      const updatedTask = await toggleTaskImportance(id);
-      const isNowImportant = updatedTask.priority === 2;
-      showNotification(
-        isNowImportant ? 'Task marked as important! ⭐' : 'Task unmarked as important 📝', 
-        'success'
-      );
-    } catch (err) {
-      showNotification('Failed to update task importance', 'error');
-      console.error('Failed to update task importance:', err);
-    }
-  };
 
-  const handleFormSubmit = async (taskData: CreateTaskDto | UpdateTaskDto) => {
+  const handleFormSubmit = async (taskData: CreateTaskDto | UpdateTaskDto, subtasks: string[]) => {
     if (editingTask) {
-      // Handle update when needed
+      try {
+        const updatedTaskData = taskData as UpdateTaskDto;
+        await updateTask(editingTask.id, updatedTaskData);
+        showNotification('Task updated successfully! ✨', 'success');
+        handleCloseForm();
+      } catch (err) {
+        showNotification('Failed to update task', 'error');
+        throw err;
+      }
     } else {
-      await handleCreateTask(taskData as CreateTaskDto);
+      await handleCreateTaskWithSubtasks(taskData as CreateTaskDto, subtasks);
+      handleCloseForm();
     }
   };
 
@@ -133,12 +215,19 @@ function MainApp() {
     setIsCalendarOpen(false);
   };
 
+  const handleCloseConfirmDialog = () => {
+    setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+  };
+
   // Loading state
   if (loading) return <LoadingSpinner />;
 
+  // Check if any modal is open
+  const isAnyModalOpen = isFormOpen || isDetailOpen || isCalendarOpen || isProfileModalOpen || isSettingsOpen || isHelpOpen || confirmDialog.isOpen;
+
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Metallic Background */}
+      {/* Animated Metallic Background - Paused when modals are open */}
       <div 
         className="fixed inset-0 -z-10"
         style={{
@@ -150,28 +239,30 @@ function MainApp() {
             linear-gradient(135deg, #f0f2f5 0%, #e8eaed 25%, #f5f7fa 50%, #e8eaed 75%, #f0f2f5 100%)
           `,
           backgroundSize: '300% 300%',
-          animation: 'metallicFlow 15s ease-in-out infinite'
+          animation: isAnyModalOpen ? 'none' : 'metallicFlow 15s ease-in-out infinite'
         }}
       >
-        {/* Floating Metallic Particles */}
-        <div className="absolute inset-0">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full opacity-40"
-              style={{
-                width: `${Math.random() * 12 + 4}px`,
-                height: `${Math.random() * 12 + 4}px`,
-                background: i % 4 === 0 ? '#F4C430' : i % 4 === 1 ? '#e6b800' : i % 4 === 2 ? '#d1d5db' : '#f8f9fa',
-                boxShadow: i % 2 === 0 ? '0 0 10px rgba(244, 196, 48, 0.3)' : '0 0 8px rgba(233, 236, 239, 0.4)',
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float${i % 3} ${10 + Math.random() * 8}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 5}s`
-              }}
-            ></div>
-          ))}
-        </div>
+        {/* Floating Metallic Particles - Hidden when modals are open */}
+        {!isAnyModalOpen && (
+          <div className="absolute inset-0">
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full opacity-40"
+                style={{
+                  width: `${Math.random() * 12 + 4}px`,
+                  height: `${Math.random() * 12 + 4}px`,
+                  background: i % 4 === 0 ? '#F4C430' : i % 4 === 1 ? '#e6b800' : i % 4 === 2 ? '#d1d5db' : '#f8f9fa',
+                  boxShadow: i % 2 === 0 ? '0 0 10px rgba(244, 196, 48, 0.3)' : '0 0 8px rgba(233, 236, 239, 0.4)',
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animation: `float${i % 3} ${10 + Math.random() * 8}s ease-in-out infinite`,
+                  animationDelay: `${Math.random() * 5}s`
+                }}
+              ></div>
+            ))}
+          </div>
+        )}
         
         {/* Enhanced Geometric Patterns */}
         <div className="absolute inset-0 opacity-15">
@@ -181,7 +272,7 @@ function MainApp() {
               top: '10%',
               left: '15%',
               background: 'conic-gradient(from 0deg, transparent 0%, rgba(244, 196, 48, 0.1) 25%, transparent 50%, rgba(233, 236, 239, 0.1) 75%, transparent 100%)',
-              animation: 'rotate 40s linear infinite'
+              animation: isAnyModalOpen ? 'none' : 'rotate 40s linear infinite'
             }}
           ></div>
           <div 
@@ -190,7 +281,7 @@ function MainApp() {
               bottom: '20%',
               right: '20%',
               background: 'conic-gradient(from 180deg, transparent 0%, rgba(244, 196, 48, 0.15) 30%, transparent 60%, rgba(248, 249, 250, 0.1) 90%, transparent 100%)',
-              animation: 'rotate 35s linear infinite reverse'
+              animation: isAnyModalOpen ? 'none' : 'rotate 35s linear infinite reverse'
             }}
           ></div>
           <div 
@@ -199,7 +290,7 @@ function MainApp() {
               top: '60%',
               left: '70%',
               background: 'radial-gradient(circle, rgba(244, 196, 48, 0.08) 0%, transparent 70%)',
-              animation: 'float1 20s ease-in-out infinite'
+              animation: isAnyModalOpen ? 'none' : 'float1 20s ease-in-out infinite'
             }}
           ></div>
         </div>
@@ -208,9 +299,10 @@ function MainApp() {
       <Header 
         onCreateClick={() => setIsFormOpen(true)}
         onCalendarClick={() => handleOpenCalendar()}
+        onProfileModalChange={setIsProfileModalOpen}
       />
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8 pt-24">
         <WelcomeSection />
         
         {error && <ErrorMessage error={error} />}
@@ -246,12 +338,12 @@ function MainApp() {
           onClose={handleDetailClose}
           onDelete={handleDeleteTask}
           onStatusChange={handleStatusChange}
-          onToggleImportance={handleToggleImportance}
           onTaskUpdate={(updatedTask) => {
-            updateTask(updatedTask);
+            updateTaskById(updatedTask);
             setSelectedTask(updatedTask);
           }}
           onCalendarClick={handleOpenCalendar}
+          onShowNotification={showNotification}
         />
 
         <CalendarModal
@@ -268,6 +360,23 @@ function MainApp() {
         {notification && (
           <Notification message={notification.message} type={notification.type} />
         )}
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={handleCloseConfirmDialog}
+        />
+
+        {/* Settings Modal */}
+        <SettingsModal />
+
+        {/* Help Modal */}
+        <HelpModal />
       </div>
     </div>
   );
@@ -275,9 +384,17 @@ function MainApp() {
 
 function App() {
   return (
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
+    <ErrorBoundary>
+      <SettingsProvider>
+        <HelpProvider>
+          <NotificationCenterProvider>
+            <UserProvider>
+              <AppContent />
+            </UserProvider>
+          </NotificationCenterProvider>
+        </HelpProvider>
+      </SettingsProvider>
+    </ErrorBoundary>
   );
 }
 

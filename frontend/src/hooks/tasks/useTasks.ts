@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
-import type { TodoTask, CreateTaskDto } from '../../services/api';
+import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/api';
 import { useUser } from '../../contexts/UserContext';
 
 export function useTasks() {
@@ -53,7 +53,13 @@ export function useTasks() {
     return updatedTask;
   };
 
-  const updateTask = (updatedTask: TodoTask) => {
+  const updateTask = async (id: number, taskData: UpdateTaskDto): Promise<TodoTask> => {
+    const updatedTask = await apiService.updateTask(id, taskData);
+    setTasks((prev: TodoTask[]) => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    return updatedTask;
+  };
+
+  const updateTaskById = (updatedTask: TodoTask) => {
     setTasks((prev: TodoTask[]) => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
   };
 
@@ -73,6 +79,7 @@ export function useTasks() {
     updateTaskStatus,
     toggleTaskImportance,
     updateTask,
+    updateTaskById,
     loadTasks
   };
 }
