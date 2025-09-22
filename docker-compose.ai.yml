@@ -1,0 +1,36 @@
+services:
+  # Override backend to enable AI
+  backend:
+    environment:
+      - EnableAI=true
+
+  # Ollama AI Service (Optional)
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - todo-network
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    entrypoint: |
+      sh -c "
+        echo '🤖 Starting Ollama AI service...'
+        ollama serve &
+        echo '⏳ Waiting for Ollama to be ready...'
+        sleep 10
+        echo '📥 Downloading llama3.2 model (this may take a few minutes)...'
+        ollama pull llama3.2:latest
+        echo '✅ Ollama setup complete!'
+        wait
+      "
+
+networks:
+  todo-network:
+    driver: bridge
+
+volumes:
+  ollama_data:

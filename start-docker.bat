@@ -5,6 +5,9 @@ REM Works on Windows 7, 8, 10, 11 and Windows Server
 
 echo Starting Todo Task Management Application (Docker Mode)
 echo ==========================================================
+echo ℹ️  Note: AI Assistant is disabled by default for faster startup
+echo    To enable AI: run start-docker-with-ai.bat instead
+echo.
 
 REM Check if Docker is installed
 docker --version >nul 2>&1

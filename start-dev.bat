@@ -49,6 +49,27 @@ if %errorlevel% neq 0 (
 
 echo Prerequisites check passed
 
+REM Check if Ollama is available (optional for AI features)
+echo.
+echo 🤖 Checking AI Assistant availability...
+ollama --version >nul 2>&1
+if %errorlevel% equ 0 (
+    ollama list | findstr "llama3.2:latest" >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo ✅ Ollama + llama3.2 model found - AI Assistant will be enabled
+        set EnableAI=true
+    ) else (
+        echo ⚠️  Ollama found but llama3.2 model missing
+        echo    Run 'ollama run llama3.2' to enable AI features
+        echo    Continuing without AI...
+        set EnableAI=false
+    )
+) else (
+    echo ℹ️  Ollama not found - AI Assistant disabled
+    echo    Install from https://ollama.com/ and run 'ollama run llama3.2' to enable AI
+    set EnableAI=false
+)
+
 REM Create data directory for SQLite
 if not exist data mkdir data
 
@@ -56,7 +77,7 @@ REM Start backend
 echo.
 echo Starting .NET Core backend...
 cd backend
-start /B dotnet run --urls="http://localhost:5001"
+start /B cmd /c "set EnableAI=%EnableAI%&& dotnet run --urls=http://localhost:5001"
 
 REM Wait for backend to start
 echo Waiting for backend to start...

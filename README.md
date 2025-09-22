@@ -61,16 +61,29 @@ start-dev.bat          # Windows
 - **Tailwind CSS** - Styling
 - **Lucide Icons** - Modern icons
 
+### AI Assistant (Optional Feature)
+- **Ezra AI** - Local AI assistant powered by Llama 3.2
+- **Natural Language** - Create tasks through conversation
+- **Smart Suggestions** - Intelligent subtask recommendations
+- **Zero Cloud Dependency** - Runs completely offline
+
 ## 📋 Prerequisites
 
 ### For Docker Mode (Recommended - Easiest!)
 - **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop/)
-  - That's it! Docker handles everything else
+  - That's it! Docker handles everything else including the AI assistant
 
 ### For Development Mode
 **You must install these first:**
 - **Node.js** (v18+) - [Download](https://nodejs.org/)
 - **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
+- **Ollama** - [Download](https://ollama.com/) for AI assistant functionality
+
+**After installing Ollama, run:**
+```bash
+ollama run llama3.2
+```
+This downloads the Llama 3.2 model (2GB) needed for the Ezra AI assistant.
 
 **The scripts will automatically install:**
 - ✅ All npm packages (React, Vite, Tailwind, etc.)
@@ -80,20 +93,27 @@ start-dev.bat          # Windows
 
 ## 🚀 Installation Options
 
-### Option 1: Docker (Easiest)
+### Option 1: Docker (Easiest - Fast Startup)
 
 ```bash
-# Mac/Linux
+# Mac/Linux - Core app only (fast startup)
 ./start-docker.sh
 
-# Windows
+# Mac/Linux - With AI assistant (takes 5-10 min first time)
+./start-docker-with-ai.sh
+
+# Windows - Core app only (fast startup)
 start-docker.bat
+
+# Windows - With AI assistant (takes 5-10 min first time)  
+start-docker-with-ai.bat
 ```
 
 **Access Points:**
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:5001
+- Backend API: http://localhost:5001  
 - Database Admin: http://localhost:8080
+- Ollama AI: http://localhost:11434 (only with AI script)
 
 ### Option 2: Development Mode
 
@@ -109,6 +129,11 @@ start-dev.bat
 - Frontend: http://localhost:5173 (with hot-reload)
 - Backend API: http://localhost:5001
 - Swagger Docs: http://localhost:5001/swagger
+
+**AI Assistant in Development Mode:**
+- ✅ **Auto-detected** - Scripts check if Ollama + llama3.2 are available
+- ✅ **Graceful fallback** - App works perfectly without AI
+- ✅ **Easy to enable** - Install Ollama, run `ollama run llama3.2`, restart script
 
 ### Option 3: Manual Setup
 
@@ -151,6 +176,12 @@ chmod +x start-dev.sh start-docker.sh
 - If installed elsewhere:
   1. Add to PATH via System Properties → Environment Variables
   2. Or restart your terminal/command prompt after installation
+
+**Ollama/AI Assistant not working (Development Mode only):**
+- Install Ollama: https://ollama.com/
+- Download the model: `ollama run llama3.2`
+- Ensure Ollama is running: `ollama serve`
+- Note: Docker mode includes Ollama automatically
 
 **Port already in use:**
 - Kill the process using the port or change the port in the scripts
