@@ -4,7 +4,7 @@
 *.db-wal
 
 # Data directory
-data/
+
 
 # Node.js
 node_modules/
