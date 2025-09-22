@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
+using TodoApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Data Source=data/ezratask.db";
 builder.Services.AddDbContext<TodoContext>(options =>
     options.UseSqlite(connectionString));
+
+// Add AI Service (only if enabled)
+var enableAI = builder.Configuration.GetValue<bool>("EnableAI", false);
+if (enableAI)
+{
+    builder.Services.AddScoped<IAIService, AIService>();
+    Console.WriteLine("🤖 AI Assistant (Ezra) enabled");
+}
+else
+{
+    Console.WriteLine("ℹ️  AI Assistant disabled (set EnableAI=true to enable)");
+}
 
 // Add CORS
 builder.Services.AddCors(options =>

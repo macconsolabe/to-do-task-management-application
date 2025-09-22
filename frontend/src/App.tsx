@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { TodoTask, CreateTaskDto, UpdateTaskDto } from './services/types';
 import { subtaskService } from './services/SubtaskService';
 
@@ -25,6 +25,9 @@ import { TaskDetail } from './components/updatetaskdetails/TaskDetail';
 import { CalendarModal } from './components/calendar/CalendarModal';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { HelpModal } from './components/help/HelpModal';
+import { AIFloatingButton } from './components/ai/AIFloatingButton';
+import { AIChatModal } from './components/ai/AIChatModal';
+import { aiService } from './services/AIService';
 
 // Hooks
 import { useTasks } from './hooks/tasks/useTasks';
@@ -47,6 +50,8 @@ function MainApp() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarInitialDate, setCalendarInitialDate] = useState<Date>(new Date());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isAIEnabled, setIsAIEnabled] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -74,6 +79,20 @@ function MainApp() {
   
   const { notification, showNotification } = useNotification();
   const { selectedTask, isDetailOpen, setSelectedTask, handleTaskClick, handleDetailClose } = useTaskModal();
+
+  // Check AI status on component mount
+  useEffect(() => {
+    const checkAIStatus = async () => {
+      try {
+        const status = await aiService.checkStatus();
+        setIsAIEnabled(status.enabled);
+      } catch (error) {
+        console.log('AI service not available');
+        setIsAIEnabled(false);
+      }
+    };
+    checkAIStatus();
+  }, []);
 
   // Derived state
   const filteredTasks = filterTasks(tasks, activeTab);
@@ -223,7 +242,7 @@ function MainApp() {
   if (loading) return <LoadingSpinner />;
 
   // Check if any modal is open
-  const isAnyModalOpen = isFormOpen || isDetailOpen || isCalendarOpen || isProfileModalOpen || isSettingsOpen || isHelpOpen || confirmDialog.isOpen;
+  const isAnyModalOpen = isFormOpen || isDetailOpen || isCalendarOpen || isProfileModalOpen || isSettingsOpen || isHelpOpen || confirmDialog.isOpen || isAIChatOpen;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -378,6 +397,21 @@ function MainApp() {
 
         {/* Help Modal */}
         <HelpModal />
+
+        {/* AI Chat - Only show if enabled */}
+        {isAIEnabled && (
+          <>
+            <AIFloatingButton onClick={() => setIsAIChatOpen(true)} />
+            <AIChatModal
+              isOpen={isAIChatOpen}
+              onClose={() => setIsAIChatOpen(false)}
+              onTaskCreated={() => {
+                loadTasks();
+                showNotification('Task created successfully!', 'success');
+              }}
+            />
+          </>
+        )}
       </div>
     </div>
   );
