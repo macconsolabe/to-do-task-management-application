@@ -20,20 +20,24 @@ A full-stack todo task management application built with .NET Core backend and R
 git clone <repository-url>
 cd to-do-task-management-application
 
-# 2. Choose your setup method:
+# 2. Choose your platform:
 
-# OPTION A: Docker (easiest - only needs Docker installed)
-./start-docker.sh      # Mac/Linux
-start-docker.bat       # Windows
+# WINDOWS - Simple Development Setup
+start.bat              # One command - opens 2 windows (no AI support)
 
-# OPTION B: Development mode (needs Node.js & .NET SDK pre-installed)
-./start-dev.sh         # Mac/Linux  
-start-dev.bat          # Windows
+# MACOS/LINUX - Full Feature Support  
+./start-docker.sh      # Docker mode (includes AI option)
+./start-dev.sh         # Development mode
 
-# 3. Open http://localhost:3000 (Docker) or http://localhost:5173 (Dev)
+# 3. Open your app:
+# Windows: http://localhost:5173
+# macOS/Linux: http://localhost:3000 (Docker) or http://localhost:5173 (Dev)
 ```
 
-**Note:** The scripts will automatically install all project dependencies (npm packages, .NET packages) but you need Docker OR Node.js+.NET SDK installed first.
+**Cross-Platform Notes:**
+- **Windows**: Simple development setup, no Docker/AI (developed for cross-platform compatibility)
+- **macOS/Linux**: Full Docker support with optional AI assistant (Ezra AI with Llama 3.2)
+- **All platforms**: Scripts auto-install dependencies (npm packages, .NET packages)
 
 ## ✨ Features
 
@@ -61,11 +65,14 @@ start-dev.bat          # Windows
 - **Tailwind CSS** - Styling
 - **Lucide Icons** - Modern icons
 
-### AI Assistant (Optional Feature)
+### AI Assistant (macOS/Linux Only)
 - **Ezra AI** - Local AI assistant powered by Llama 3.2
 - **Natural Language** - Create tasks through conversation
 - **Smart Suggestions** - Intelligent subtask recommendations
 - **Zero Cloud Dependency** - Runs completely offline
+- **Platform Support**: 
+  - **Docker mode**: Automatic setup on macOS/Linux
+  - **Development mode**: Available on macOS/Linux if Ollama + Llama 3.2 model already installed
 
 ## 📋 Prerequisites
 
@@ -74,10 +81,12 @@ start-dev.bat          # Windows
   - That's it! Docker handles everything else including the AI assistant
 
 ### For Development Mode
-**You must install these first:**
+**🚨 CRITICAL REQUIREMENTS - You MUST install these first:**
+- **🔥 .NET 8 SDK** (REQUIRED) - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
+  - ⚠️ **Must be SDK, not just Runtime** - The application will NOT work without this
+  - ✅ Verify installation: `dotnet --version` should show 8.x.x
 - **Node.js** (v18+) - [Download](https://nodejs.org/)
-- **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Ollama** - [Download](https://ollama.com/) for AI assistant functionality
+- **Ollama** (Optional - macOS/Linux only) - [Download](https://ollama.com/) for AI assistant functionality
 
 **After installing Ollama, run:**
 ```bash
@@ -93,36 +102,46 @@ This downloads the Llama 3.2 model (2GB) needed for the Ezra AI assistant.
 
 ## 🚀 Installation Options
 
-### Option 1: Docker (Easiest - Fast Startup)
+### Windows (Simple Development Setup)
 
+```cmd
+# Windows - Simple one-command startup
+start.bat
+```
+
+**What it does:**
+- ✅ **Starts .NET backend** in a new window (port 5001)
+- ✅ **Starts React frontend** in a new window (port 5173)  
+- ✅ **Hot-reload enabled** for development
+- ✅ **No Docker required** - uses your installed Node.js & .NET
+- ⚠️ **AI Assistant not supported** on Windows
+
+**Access Points:**
+- Frontend: http://localhost:5173 (with hot-reload)
+- Backend API: http://localhost:5001
+- Swagger Docs: http://localhost:5001/swagger
+
+### macOS/Linux (Full Feature Support)
+
+#### Option 1: Docker (Recommended)
 ```bash
-# Mac/Linux - Core app only (fast startup)
+# Core app only (fast startup)
 ./start-docker.sh
 
-# Mac/Linux - With AI assistant (takes 5-10 min first time)
+# With AI assistant (takes 5-10 min first time - macOS only)
 ./start-docker-with-ai.sh
-
-# Windows - Core app only (fast startup)
-start-docker.bat
-
-# Windows - With AI assistant (takes 5-10 min first time)  
-start-docker-with-ai.bat
 ```
 
 **Access Points:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5001  
 - Database Admin: http://localhost:8080
-- Ollama AI: http://localhost:11434 (only with AI script)
+- Ollama AI: http://localhost:11434 (AI version only)
 
-### Option 2: Development Mode
-
+#### Option 2: Development Mode
 ```bash
-# Mac/Linux
+# Development with hot-reload
 ./start-dev.sh
-
-# Windows
-start-dev.bat
 ```
 
 **Access Points:**
@@ -151,7 +170,32 @@ npm run dev
 
 ## 🔧 Troubleshooting
 
-**Scripts not executable (Mac/Linux):**
+### Windows Issues
+
+**start.bat not working:**
+```cmd
+# Try running from Command Prompt (not PowerShell)
+cd C:\Code\to-do-task-management-application
+start.bat
+
+# Or double-click the start.bat file in File Explorer
+```
+
+**Prerequisites missing:**
+- **🔥 .NET 8 SDK** (CRITICAL): Download from https://dotnet.microsoft.com/download/dotnet/8.0
+  - ⚠️ Must be SDK, not Runtime - verify with `dotnet --version`
+- **Node.js** (v18+): Download from https://nodejs.org/
+
+**Port already in use:**
+```cmd
+# Kill existing processes
+taskkill /f /im dotnet.exe
+taskkill /f /im node.exe
+```
+
+### Mac/Linux Issues
+
+**Scripts not executable:**
 ```bash
 chmod +x start-dev.sh start-docker.sh
 ```
