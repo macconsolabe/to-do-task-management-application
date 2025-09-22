@@ -30,7 +30,7 @@ services:
 
 networks:
   todo-network:
-    external: true
+    driver: bridge
 
 volumes:
   ollama_data:
