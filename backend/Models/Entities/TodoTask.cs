@@ -14,7 +14,7 @@ namespace TodoApp.Models.Entities
         public string Description { get; set; } = string.Empty;
 
         [Required]
-        public TaskStatus Status { get; set; } = TaskStatus.Pending;
+        public TaskStatus Status { get; set; } = TaskStatus.Todo;
 
         [Required]
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
@@ -37,15 +37,15 @@ namespace TodoApp.Models.Entities
 
     public enum TaskStatus
     {
-        Pending = 0,
-        InProgress = 1,
-        Completed = 2
+        Todo = 0,        // Will be stored as "Todo" in database
+        InProgress = 1,  // Will be stored as "InProgress" in database
+        Completed = 2    // Will be stored as "Completed" in database
     }
 
     public enum TaskPriority
     {
-        Low = 0,
-        Medium = 1,
-        High = 2
+        Low = 0,         // Will be stored as "Low" in database
+        Medium = 1,      // Will be stored as "Medium" in database
+        High = 2         // Will be stored as "High" in database
     }
 }

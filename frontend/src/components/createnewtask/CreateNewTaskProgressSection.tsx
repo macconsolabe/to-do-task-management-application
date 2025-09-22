@@ -1,4 +1,4 @@
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 
 interface FormData {
   title: string;

@@ -1,4 +1,4 @@
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 import { getWeekStartDay } from '../../utils/dateUtils';
 import { useSettings } from '../../contexts/SettingsContext';
 

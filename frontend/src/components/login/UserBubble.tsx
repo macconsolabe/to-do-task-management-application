@@ -1,4 +1,4 @@
-import type { User } from '../../services/api';
+import type { User } from '../../services/types';
 
 interface UserBubbleProps {
   user: User;

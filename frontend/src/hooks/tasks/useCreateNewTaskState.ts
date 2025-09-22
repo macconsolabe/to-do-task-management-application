@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/api';
+import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/types';
 import { useSettings } from '../../contexts/SettingsContext';
 
 interface FormData {

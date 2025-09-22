@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { apiService } from '../../services/api';
-import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/api';
+import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/types';
+import { taskService } from '../../services/TaskService';
 import { useUser } from '../../contexts/UserContext';
 
 export function useTasks() {
@@ -13,7 +13,7 @@ export function useTasks() {
     try {
       setError(null);
       setLoading(true);
-      const fetchedTasks = await apiService.getAllTasks(user?.id);
+      const fetchedTasks = await taskService.getAllTasks(user?.id);
       setTasks(fetchedTasks);
       console.log('Tasks loaded:', fetchedTasks);
     } catch (err) {
@@ -26,18 +26,18 @@ export function useTasks() {
   };
 
   const createTask = async (taskData: CreateTaskDto) => {
-    const newTask = await apiService.createTask(taskData);
+    const newTask = await taskService.createTask(taskData);
     setTasks((prev: TodoTask[]) => [newTask, ...prev]);
     return newTask;
   };
 
   const deleteTask = async (id: number) => {
-    await apiService.deleteTask(id);
+    await taskService.deleteTask(id);
     setTasks((prev: TodoTask[]) => prev.filter(task => task.id !== id));
   };
 
   const updateTaskStatus = async (id: number, newStatus: number) => {
-    await apiService.updateTaskStatus(id, newStatus);
+    await taskService.updateTaskStatus(id, newStatus);
     setTasks((prev: TodoTask[]) => prev.map(task =>
       task.id === id
         ? { ...task, status: newStatus, updatedAt: new Date().toISOString() }
@@ -46,7 +46,7 @@ export function useTasks() {
   };
 
   const toggleTaskImportance = async (id: number) => {
-    const updatedTask = await apiService.toggleTaskImportance(id);
+    const updatedTask = await taskService.toggleTaskImportance(id);
     setTasks((prev: TodoTask[]) => prev.map(task =>
       task.id === id ? updatedTask : task
     ));
@@ -54,7 +54,7 @@ export function useTasks() {
   };
 
   const updateTask = async (id: number, taskData: UpdateTaskDto): Promise<TodoTask> => {
-    const updatedTask = await apiService.updateTask(id, taskData);
+    const updatedTask = await taskService.updateTask(id, taskData);
     setTasks((prev: TodoTask[]) => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
     return updatedTask;
   };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { TodoTask, CreateTaskDto, UpdateTaskDto } from './services/api';
-import { apiService } from './services/api';
+import type { TodoTask, CreateTaskDto, UpdateTaskDto } from './services/types';
+import { subtaskService } from './services/SubtaskService';
 
 // User System
 import { UserProvider, useUser } from './contexts/UserContext';
@@ -96,7 +96,7 @@ function MainApp() {
       // Create subtasks if any
       if (subtaskTitles.length > 0) {
         const subtaskPromises = subtaskTitles.map((title, index) => 
-          apiService.createSubtask({
+          subtaskService.createSubtask({
             Title: title,
             TodoTaskId: createdTask.id,
             Order: index
@@ -300,6 +300,7 @@ function MainApp() {
         onCreateClick={() => setIsFormOpen(true)}
         onCalendarClick={() => handleOpenCalendar()}
         onProfileModalChange={setIsProfileModalOpen}
+        onTaskClick={handleTaskClick}
       />
 
       <div className="max-w-4xl mx-auto px-6 py-8 pt-24">

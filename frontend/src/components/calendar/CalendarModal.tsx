@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 import { CalendarDayView } from './CalendarDayView';
 import { CalendarWeekView } from './CalendarWeekView';
 import { CalendarMonthView } from './CalendarMonthView';

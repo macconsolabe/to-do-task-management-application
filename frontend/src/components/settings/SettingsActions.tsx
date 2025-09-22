@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useUser } from '../../contexts/UserContext';
-import { apiService } from '../../services/api';
+import { userService } from '../../services/UserService';
 
 export function SettingsActions() {
   const { resetSettings } = useSettings();
@@ -17,7 +17,7 @@ export function SettingsActions() {
     if (!user) return;
     
     try {
-      await apiService.deleteUser(user.id);
+      await userService.deleteUser(user.id);
       await logout(); // This will clear local storage and redirect to user selection
       setShowDeleteConfirm(false);
     } catch (error) {

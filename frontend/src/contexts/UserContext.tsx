@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { User, CreateUserDto, UpdateUserDto } from '../services/api';
-import { apiService } from '../services/api';
+import type { User, CreateUserDto, UpdateUserDto } from '../services/types';
+import { userService } from '../services/UserService';
 
 interface UserContextType {
   user: User | null;
@@ -50,14 +50,14 @@ export function UserProvider({ children }: UserProviderProps) {
       }
 
       // Fetch all users to determine app state
-      const users = await apiService.getUsers();
+      const users = await userService.getUsers();
       setAllUsers(users);
       setHasExistingUsers(users.length > 0);
 
       // Only auto-login if we have a cached user, otherwise stay logged out
       if (cachedUser) {
         // Verify cached user still exists in backend
-        const currentUser = await apiService.getCurrentUser();
+        const currentUser = await userService.getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
           localStorage.setItem('eTask_user', JSON.stringify(currentUser));
@@ -86,13 +86,13 @@ export function UserProvider({ children }: UserProviderProps) {
   const createUser = async (userData: CreateUserDto): Promise<User> => {
     try {
       setError(null);
-      const newUser = await apiService.createUser(userData);
+      const newUser = await userService.createUser(userData);
       setUser(newUser);
       localStorage.setItem('eTask_user', JSON.stringify(newUser));
       setIsFirstTimeUser(false);
       
       // Refresh the user list to include the new user
-      const updatedUsers = await apiService.getUsers();
+      const updatedUsers = await userService.getUsers();
       setAllUsers(updatedUsers);
       setHasExistingUsers(updatedUsers.length > 0);
       
@@ -111,7 +111,7 @@ export function UserProvider({ children }: UserProviderProps) {
 
     try {
       setError(null);
-      const updatedUser = await apiService.updateUser(user.id, userData);
+      const updatedUser = await userService.updateUser(user.id, userData);
       setUser(updatedUser);
       localStorage.setItem('eTask_user', JSON.stringify(updatedUser));
       return updatedUser;
@@ -134,7 +134,7 @@ export function UserProvider({ children }: UserProviderProps) {
     try {
       setError(null);
       // Verify user still exists in backend
-      const verifiedUser = await apiService.getUserByEmail(selectedUser.email);
+      const verifiedUser = await userService.getUserByEmail(selectedUser.email);
       
       if (verifiedUser) {
         setUser(verifiedUser);
@@ -158,7 +158,7 @@ export function UserProvider({ children }: UserProviderProps) {
     
     // Refresh user list to show all available accounts
     try {
-      const users = await apiService.getUsers();
+      const users = await userService.getUsers();
       setAllUsers(users);
       setHasExistingUsers(users.length > 0);
     } catch (err) {

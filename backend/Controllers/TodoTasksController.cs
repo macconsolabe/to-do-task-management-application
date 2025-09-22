@@ -41,8 +41,48 @@ namespace TodoApi.Controllers
             return tasks.Select(t => t.ToResponseDto()).ToList();
         }
 
+        // GET: api/TodoTasks/search?query={searchTerm}&userId={userId}
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<TodoTaskResponseDto>>> SearchTodoTasks(
+            [FromQuery] string query, 
+            [FromQuery] int? userId = null)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return BadRequest(new { message = "Search query cannot be empty" });
+            }
+
+            // Normalize search query for case-insensitive search
+            var searchTerm = query.Trim().ToLower();
+
+            var queryBuilder = _context.TodoTasks
+                .Include(t => t.Subtasks.OrderBy(s => s.Order))
+                .AsQueryable();
+
+            // Filter by user if userId is provided
+            if (userId.HasValue)
+            {
+                queryBuilder = queryBuilder.Where(t => t.UserId == userId.Value);
+            }
+
+            // Search across title, description, and subtasks
+            var searchResults = await queryBuilder
+                .Where(t => 
+                    // Search in task title
+                    t.Title.ToLower().Contains(searchTerm) ||
+                    // Search in task description
+                    t.Description.ToLower().Contains(searchTerm) ||
+                    // Search in subtask titles
+                    t.Subtasks.Any(s => s.Title.ToLower().Contains(searchTerm))
+                )
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return searchResults.Select(t => t.ToResponseDto()).ToList();
+        }
+
         // GET: api/TodoTasks/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<TodoTaskResponseDto>> GetTodoTask(int id)
         {
             var todoTask = await _context.TodoTasks
@@ -83,7 +123,7 @@ namespace TodoApi.Controllers
                 Priority = createDto.Priority,
                 DueDate = createDto.DueDate,
                 UserId = createDto.UserId,
-                Status = TaskStatus.Pending,
+                Status = TaskStatus.Todo,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

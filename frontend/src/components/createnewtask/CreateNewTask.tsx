@@ -1,4 +1,4 @@
-import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/api';
+import type { TodoTask, CreateTaskDto, UpdateTaskDto } from '../../services/types';
 
 // Hooks
 import { useCreateNewTaskState } from '../../hooks/tasks/useCreateNewTaskState';

@@ -9,9 +9,30 @@ echo "=================================================================="
 echo "📋 Checking prerequisites..."
 
 # Check if .NET is installed
-if ! command -v dotnet &> /dev/null; then
-    echo "❌ .NET SDK is not installed. Please install .NET 8 SDK first."
+# First check if dotnet is in PATH
+if command -v dotnet &> /dev/null; then
+    DOTNET_CMD="dotnet"
+# Check common macOS installation locations
+elif [ -f "$HOME/.dotnet/dotnet" ]; then
+    DOTNET_CMD="$HOME/.dotnet/dotnet"
+    export PATH="$PATH:$HOME/.dotnet"
+elif [ -f "/usr/local/share/dotnet/dotnet" ]; then
+    DOTNET_CMD="/usr/local/share/dotnet/dotnet"
+    export PATH="$PATH:/usr/local/share/dotnet"
+else
+    echo "❌ .NET SDK is not installed or not found in common locations."
     echo "   Download from: https://dotnet.microsoft.com/download"
+    echo ""
+    echo "   If you have .NET installed in a custom location, you can:"
+    echo "   1. Add it to your PATH: export PATH=\"\$PATH:/path/to/dotnet\""
+    echo "   2. Or create a symlink: ln -s /path/to/dotnet /usr/local/bin/dotnet"
+    exit 1
+fi
+
+# Verify .NET SDK is installed (not just runtime)
+if ! $DOTNET_CMD --list-sdks &> /dev/null; then
+    echo "❌ .NET SDK is not installed (only runtime found)."
+    echo "   Download .NET 8 SDK from: https://dotnet.microsoft.com/download"
     exit 1
 fi
 
@@ -43,22 +64,21 @@ trap cleanup SIGINT SIGTERM
 echo ""
 echo "🔧 Starting .NET Core backend..."
 cd backend
-dotnet restore --quiet
-export PATH="$PATH:$HOME/.dotnet"
-dotnet run --urls="http://localhost:5000" --verbosity quiet &
+$DOTNET_CMD restore --quiet
+$DOTNET_CMD run --urls="http://localhost:5001" --verbosity quiet &
 BACKEND_PID=$!
 
 # Wait for backend to start
 echo "⏳ Waiting for backend to start..."
 for i in {1..10}; do
-    if curl -s http://localhost:5000/api/health > /dev/null 2>&1; then
+    if curl -s http://localhost:5001/api/health > /dev/null 2>&1; then
         break
     fi
     sleep 1
 done
 
 # Check if backend is running
-if ! curl -s http://localhost:5000/api/health > /dev/null 2>&1; then
+if ! curl -s http://localhost:5001/api/health > /dev/null 2>&1; then
     echo "❌ Backend failed to start"
     kill $BACKEND_PID 2>/dev/null
     exit 1
@@ -78,14 +98,14 @@ echo ""
 echo "🌟 Application is running!"
 echo "================================"
 echo "   📱 Frontend:          http://localhost:5173"
-echo "   🔧 Backend API:       http://localhost:5000"
-echo "   📚 API Documentation: http://localhost:5000/swagger"
-echo "   ❤️  Health Check:     http://localhost:5000/api/health"
+echo "   🔧 Backend API:       http://localhost:5001"
+echo "   📚 API Documentation: http://localhost:5001/swagger"
+echo "   ❤️  Health Check:     http://localhost:5001/api/health"
 echo ""
 echo "💡 Tips:"
 echo "   • The frontend will hot-reload when you make changes"
 echo "   • The backend API includes Swagger documentation"
-echo "   • SQLite database is stored in ./data/todos.db"
+echo "   • SQLite database is stored in ./data/ezratask.db"
 echo ""
 echo "Press Ctrl+C to stop all services"
 

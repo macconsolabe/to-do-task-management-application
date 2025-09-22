@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { UpdateUserDto } from '../../services/api';
+import type { UpdateUserDto } from '../../services/types';
 import { useUser } from '../../contexts/UserContext';
 
 export function useUserProfile() {

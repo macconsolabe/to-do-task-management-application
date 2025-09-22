@@ -1,4 +1,4 @@
-import type { TodoTask, UpdateTaskDto } from '../../services/api';
+import type { TodoTask, UpdateTaskDto } from '../../services/types';
 import { getStatusLabel, getPriorityLabel } from '../../utils/taskUtils';
 import { formatDateLong, shouldHighlightOverdue } from '../../utils/dateUtils';
 import { useSettings } from '../../contexts/SettingsContext';

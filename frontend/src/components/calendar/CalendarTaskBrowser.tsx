@@ -1,4 +1,4 @@
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 import { useCalendarState } from '../../hooks/calendar/useCalendarState';
 import { DateNavigation } from '../ui/DateNavigation';
 import { CalendarCardCarousel } from '../taskcard/CalendarCardCarousel';

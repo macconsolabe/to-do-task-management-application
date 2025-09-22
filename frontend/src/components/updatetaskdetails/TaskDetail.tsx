@@ -1,5 +1,5 @@
-import type { TodoTask, UpdateTaskDto } from '../../services/api';
-import { apiService } from '../../services/api';
+import type { TodoTask, UpdateTaskDto } from '../../services/types';
+import { taskService } from '../../services/TaskService';
 
 // Hooks
 import { useTaskDetailState } from '../../hooks/tasks/useTaskDetailState';
@@ -76,7 +76,7 @@ export function TaskDetail({
 
   const handleToggleImportanceWrapper = async () => {
     try {
-      const updatedTask = await apiService.toggleTaskImportance(localTask.id);
+      const updatedTask = await taskService.toggleTaskImportance(localTask.id);
       setLocalTask(updatedTask);
       onTaskUpdate(updatedTask);
       setShowTaskMenu(false);

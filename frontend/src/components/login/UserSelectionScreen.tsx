@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { User } from '../../services/api';
+import type { User } from '../../services/types';
 import { UserBubble } from './UserBubble';
 import ezraLogo from '../../assets/ezralogo.png';
 

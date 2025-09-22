@@ -1,5 +1,6 @@
-import type { TodoTask, UpdateTaskDto } from '../../services/api';
-import { apiService } from '../../services/api';
+import type { TodoTask, UpdateTaskDto } from '../../services/types';
+import { taskService } from '../../services/TaskService';
+import { subtaskService } from '../../services/SubtaskService';
 import { useSettings } from '../../contexts/SettingsContext';
 
 export function useTaskDetailActions() {
@@ -23,7 +24,7 @@ export function useTaskDetailActions() {
       onTaskUpdate(updatedTask);
 
       // Make API call
-      await apiService.toggleSubtask(subtaskId);
+      await subtaskService.toggleSubtask(subtaskId);
       
       // Check if auto-complete is enabled and all subtasks are now completed
       if (settings.tasks.autoCompleteWithSubtasks && 
@@ -38,7 +39,7 @@ export function useTaskDetailActions() {
           priority: updatedTask.priority,
           dueDate: updatedTask.dueDate
         };
-        const completedTask = await apiService.updateTask(updatedTask.id, completeUpdateData);
+        const completedTask = await taskService.updateTask(updatedTask.id, completeUpdateData);
         setLocalTask(completedTask);
         onTaskUpdate(completedTask);
         onShowNotification?.('Task auto-completed! All subtasks finished ✅', 'success');
@@ -86,7 +87,7 @@ export function useTaskDetailActions() {
         dueDate: task.dueDate,
         [field]: value 
       };
-      const updatedTask = await apiService.updateTask(task.id, updateData);
+      const updatedTask = await taskService.updateTask(task.id, updateData);
       setLocalTask(updatedTask);
       onTaskUpdate(updatedTask);
       resetEditingStates();

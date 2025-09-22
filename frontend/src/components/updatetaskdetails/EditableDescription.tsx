@@ -1,5 +1,5 @@
-import type { TodoTask, UpdateTaskDto } from '../../services/api';
-import { apiService } from '../../services/api';
+import type { TodoTask, UpdateTaskDto } from '../../services/types';
+import { taskService } from '../../services/TaskService';
 
 interface EditableDescriptionProps {
   task: TodoTask;
@@ -24,7 +24,7 @@ export function EditableDescription({ task, isEditing, setIsEditing, onTaskUpdat
         priority: task.priority,
         dueDate: task.dueDate
       };
-      const updatedTask = await apiService.updateTask(task.id, updateData);
+      const updatedTask = await taskService.updateTask(task.id, updateData);
       onTaskUpdate(updatedTask);
       setIsEditing(false);
       onShowNotification?.('Description updated ✓', 'success');
