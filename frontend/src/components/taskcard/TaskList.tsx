@@ -1,4 +1,4 @@
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 import { TaskCard } from './TaskCard';
 import { TaskTabs } from './TaskTabs';
 import { EmptyState } from '../ui/EmptyState';
@@ -28,7 +28,6 @@ export function TaskList({
       
       <TaskTabs activeTab={activeTab} onTabChange={onTabChange} />
 
-      {/* Task List */}
       <div className="space-y-4">
         {tasks.map((task: TodoTask) => (
           <TaskCard
@@ -41,7 +40,6 @@ export function TaskList({
         ))}
       </div>
 
-      {/* Empty State */}
       {tasks.length === 0 && !error && (
         <EmptyState activeTab={activeTab} />
       )}

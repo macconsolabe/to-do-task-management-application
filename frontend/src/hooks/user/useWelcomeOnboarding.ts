@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CreateUserDto } from '../../services/api';
+import type { CreateUserDto } from '../../services/types';
 import { useUser } from '../../contexts/UserContext';
 
 type OnboardingStep = 'intro' | 'name' | 'email' | 'phoneNumber' | 'complete';

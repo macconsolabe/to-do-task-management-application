@@ -1,4 +1,4 @@
-import type { TodoTask } from '../services/api';
+import type { TodoTask } from '../services/types';
 
 export const getProgressPercentage = (task: TodoTask): number => {
   // If task is completed, always 100%

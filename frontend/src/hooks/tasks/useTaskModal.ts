@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 
 export function useTaskModal() {
   const [selectedTask, setSelectedTask] = useState<TodoTask | null>(null);

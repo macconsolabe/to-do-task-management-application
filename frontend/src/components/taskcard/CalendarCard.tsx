@@ -1,4 +1,4 @@
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 import { getProgressPercentage, getProgressColor } from '../../utils/taskUtils';
 
 interface CalendarCardProps {

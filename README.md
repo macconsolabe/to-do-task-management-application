@@ -1,483 +1,202 @@
 # eTask - Smart Task Management Application
 
-A full-stack todo task management application built with .NET Core backend and React TypeScript frontend. This project demonstrates modern web development practices, clean architecture, and production-ready features.
+A full-stack todo task management application built with .NET Core backend and React TypeScript frontend.
 
 ## 📋 Table of Contents
 
-- [🚀 Features](#-features)
-- [🏗️ Architecture](#️-architecture)
-- [🛠️ Tech Stack](#️-tech-stack)
+- [🚀 Quick Setup](#-quick-setup-2-minutes)
+- [✨ Features](#-features)
+- [🏗️ Tech Stack](#️-tech-stack)
 - [📋 Prerequisites](#-prerequisites)
-- [🚀 Quick Start](#-quick-start)
-- [🌐 Access Points](#-access-points)
-- [🔧 API Endpoints](#-api-endpoints)
-- [👨‍💻 Developer Guide](#-developer-guide)
-- [🧪 Testing](#-testing)
-- [🚀 Deployment Considerations](#-deployment-considerations)
-- [🔮 Future Enhancements](#-future-enhancements)
+- [🚀 Installation Options](#-installation-options)
+- [🔧 Troubleshooting](#-troubleshooting)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
-- [👨‍💻 Developer Notes](#-developer-notes)
 
-## 🚀 Features
+## 🚀 Quick Setup (2 minutes!)
 
-### Core Functionality
-- ✅ **CRUD Operations**: Create, read, update, and delete tasks
-- ✅ **Task Status Management**: Pending, In Progress, Completed
-- ✅ **Priority Levels**: Low, Medium, High priority tasks
-- ✅ **Due Dates**: Set and track task deadlines with overdue indicators
-- ✅ **Real-time Updates**: Instant UI updates with optimistic updates
+```bash
+# 1. Clone the repo
+git clone <repository-url>
+cd to-do-task-management-application
 
-### User Experience
-- 🎨 **Modern UI**: Clean, responsive design with Tailwind CSS
-- 📱 **Mobile Friendly**: Fully responsive across all device sizes
-- 🔍 **Advanced Filtering**: Filter by status and priority
-- 📊 **Task Statistics**: Overview dashboard with task counts
-- 🗂️ **Flexible Sorting**: Sort by creation date, due date, priority, or title
-- 💫 **Loading States**: Smooth loading indicators and skeleton screens
-- 🔔 **Notifications**: Success and error notifications for user actions
+# 2. Choose your setup method:
 
-### Production Ready
-- 🛡️ **Input Validation**: Client-side and server-side validation
-- 🚨 **Error Handling**: Comprehensive error handling with user-friendly messages
-- 🔒 **CORS Configuration**: Secure cross-origin resource sharing
-- 📚 **API Documentation**: Swagger/OpenAPI documentation
-- 🗃️ **Database**: SQLite with Entity Framework Core
-- 🎯 **Type Safety**: Full TypeScript implementation
+# OPTION A: Docker (easiest - only needs Docker installed)
+./start-docker.sh      # Mac/Linux
+start-docker.bat       # Windows
 
-## 🏗️ Architecture
+# OPTION B: Development mode (needs Node.js & .NET SDK pre-installed)
+./start-dev.sh         # Mac/Linux  
+start-dev.bat          # Windows
 
-### Backend (.NET Core 8) - Clean DTO Architecture
-
-**🏗️ Architectural Pattern:**
-```
-backend/
-├── Controllers/          # API controllers
-│   └── {Entity}Controller.cs
-├── Models/              # Clean separation architecture
-│   ├── Entities/        # 🗃️ Database entities (NEVER exposed to API)
-│   │   └── {Entity}.cs
-│   └── DTOs/           # 📦 API contracts (ONLY interface with frontend)
-│       ├── Request/    # 📥 Input DTOs (Create/Update operations)
-│       │   ├── Create{Entity}Dto.cs
-│       │   └── Update{Entity}Dto.cs
-│       └── Response/   # 📤 Output DTOs (API responses)
-│           └── {Entity}ResponseDto.cs
-├── Extensions/          # Entity ↔ DTO mapping utilities
-│   └── MappingExtensions.cs
-├── Data/               # Database context & configurations
-│   └── TodoContext.cs
-└── Program.cs          # Application entry point
+# 3. Open http://localhost:3000 (Docker) or http://localhost:5173 (Dev)
 ```
 
-**🛡️ DTO Pattern Rules:**
-- 🚫 **NEVER return entities directly** - Always use Response DTOs
-- ✅ **Clean separation** - Entities stay internal, DTOs are external contracts
-- 🔄 **Mapping layer** - Use extensions to convert between entities and DTOs
-- 🛡️ **Security first** - No accidental exposure of sensitive data
-- 📝 **When adding new features** - Follow the same Entity/DTO separation pattern
+**Note:** The scripts will automatically install all project dependencies (npm packages, .NET packages) but you need Docker OR Node.js+.NET SDK installed first.
 
-### Frontend (React + TypeScript) - SOC Architecture
+## ✨ Features
 
-**🎯 Separation of Concerns Implementation:**
+- ✅ **Task Management**: Create, update, delete, and organize tasks
+- 🔍 **Smart Search**: Search across titles, descriptions, and subtasks
+- 📊 **Progress Tracking**: Visual progress bars with subtask completion
+- 🏷️ **Status & Priority**: Organize with Todo, In Progress, Completed statuses
+- 📱 **Responsive Design**: Works on desktop, tablet, and mobile
+- 🎨 **Modern UI**: Clean, intuitive interface with Tailwind CSS
+- 📅 **Calendar View**: Visualize tasks in calendar format
+- 🔔 **Notifications**: Real-time updates and alerts
 
-```
-frontend/src/
-├── components/
-│   ├── calendar/           # 📅 Calendar system (5 components)
-│   │   ├── CalendarTaskBrowser.tsx    # Main calendar interface
-│   │   ├── CalendarModal.tsx          # Full calendar modal
-│   │   └── Calendar[Day|Week|Month]View.tsx
-│   ├── createnewtask/      # ➕ Task creation (7 components)
-│   │   ├── CreateNewTask.tsx          # Main orchestrator
-│   │   └── CreateNewTask[*].tsx       # Specialized sub-components
-│   ├── updatetaskdetails/  # ✏️ Task editing (7 components)
-│   │   ├── TaskDetail.tsx             # Main orchestrator
-│   │   └── [Editable|Task]*].tsx      # Specialized sub-components
-│   ├── taskcard/           # 📋 Task display (5 components)
-│   │   ├── TaskCard.tsx, TaskList.tsx # Task list & cards
-│   │   └── CalendarCard*.tsx          # Calendar card components
-│   ├── layout/             # 🏠 App layout (3 components)
-│   └── ui/                 # 🧩 Reusable UI (5 components)
-├── hooks/                  # 🎣 Custom hooks (9 hooks)
-│   ├── useCalendarState.ts      # Calendar date management
-│   ├── useCreateNewTask*.ts     # Task creation logic
-│   ├── useTaskDetail*.ts        # Task editing logic
-│   └── use[Tasks|Modal|etc].ts  # Core app logic
-├── utils/                  # 🛠️ Utility functions
-└── services/              # 🌐 API layer
-```
+## 🏗️ Tech Stack
 
-**🎯 SOC Benefits:**
-- **📦 Modular**: Each folder has single responsibility
-- **🔧 Maintainable**: Easy to find and modify features
-- **🧪 Testable**: Components can be tested in isolation
-- **📈 Scalable**: Simple to add new features or modify existing ones
-- **👥 Team-friendly**: Multiple developers can work on different features
+### Backend (.NET 8)
+- **ASP.NET Core Web API** - RESTful API
+- **Entity Framework Core** - ORM with SQLite
+- **Clean Architecture** - DTOs, Dependency Injection
+- **Swagger** - API documentation
 
-## 🛠️ Tech Stack
-
-### Backend
-- **.NET Core 8**: Modern, cross-platform framework
-- **Entity Framework Core**: ORM for database operations
-- **SQLite**: Lightweight, file-based database
-- **Swagger/OpenAPI**: API documentation
-- **ASP.NET Core Web API**: RESTful API framework
-
-### Frontend
-- **React 18**: Modern UI library with hooks
-- **TypeScript**: Type-safe JavaScript
-- **Vite**: Fast build tool and dev server
-- **Tailwind CSS**: Utility-first CSS framework
-- **Axios**: HTTP client for API calls
-- **Lucide React**: Modern icon library
+### Frontend (React + TypeScript)
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Fast build tool
+- **Tailwind CSS** - Styling
+- **Lucide Icons** - Modern icons
 
 ## 📋 Prerequisites
 
-Before running this application, make sure you have the following installed:
+### For Docker Mode (Recommended - Easiest!)
+- **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop/)
+  - That's it! Docker handles everything else
 
-- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-- **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download)
-- **Git** - [Download](https://git-scm.com/)
+### For Development Mode
+**You must install these first:**
+- **Node.js** (v18+) - [Download](https://nodejs.org/)
+- **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-## 🚀 Quick Start
+**The scripts will automatically install:**
+- ✅ All npm packages (React, Vite, Tailwind, etc.)
+- ✅ All NuGet packages (.NET dependencies)
+- ✅ Create the SQLite database
+- ✅ Set up the data directory
 
-### Option 1: Development Mode (Fast Setup)
+## 🚀 Installation Options
 
-**Best for**: Quick testing, development, debugging
-**Requirements**: .NET 8 SDK + Node.js
+### Option 1: Docker (Easiest)
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd to-do-task-management-application
-   ```
+```bash
+# Mac/Linux
+./start-docker.sh
 
-2. **Run the development script**
-   ```bash
-   ./start-dev.sh
-   ```
+# Windows
+start-docker.bat
+```
 
-   **What it does:**
-   - ✅ Checks prerequisites (.NET 8, Node.js)
-   - 📦 Installs dependencies automatically
-   - 🚀 Starts backend API on http://localhost:5001
-   - 🎨 Starts frontend dev server on http://localhost:5173
-   - 📊 Provides real-time logs and hot-reload
+**Access Points:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5001
+- Database Admin: http://localhost:8080
 
-### Option 2: Docker Mode (Cross-Platform, Production-Ready)
+### Option 2: Development Mode
 
-**Best for**: Cross-platform compatibility, "works everywhere", production testing
-**Requirements**: Docker + Docker Compose only
+```bash
+# Mac/Linux
+./start-dev.sh
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd to-do-task-management-application
-   ```
+# Windows
+start-dev.bat
+```
 
-2. **Run with Docker**
-   ```bash
-   ./start-docker.sh
-   ```
-
-   **What it does:**
-   - 🐳 Builds and runs all services in containers
-   - 🔧 Backend API (containerized) on http://localhost:5001
-   - 🎨 Frontend (Nginx + React build) on http://localhost:3000
-   - 🗃️ Database Admin UI (Adminer) on http://localhost:8080
-   - 📁 Persistent SQLite data storage
-   - 🌍 **Works identically on Windows, Mac, Linux**
+**Access Points:**
+- Frontend: http://localhost:5173 (with hot-reload)
+- Backend API: http://localhost:5001
+- Swagger Docs: http://localhost:5001/swagger
 
 ### Option 3: Manual Setup
 
-1. **Backend Setup**
-   ```bash
-   cd backend
-   dotnet restore
-   dotnet run --urls="http://localhost:5001"
-   ```
-
-2. **Frontend Setup** (new terminal)
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-## 🌐 Access Points
-
-### Development Mode (`./start-dev.sh`)
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Frontend** | http://localhost:5173 | React dev server with hot-reload |
-| **Backend API** | http://localhost:5001 | REST API endpoints |
-| **API Docs** | http://localhost:5001/swagger | Interactive API documentation |
-| **Health Check** | http://localhost:5001/api/health | API health status |
-
-### Docker Mode (`./start-docker.sh`)
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Frontend** | http://localhost:3000 | Production React build (Nginx) |
-| **Backend API** | http://localhost:5001 | Containerized REST API |
-| **DB Admin** | http://localhost:8080 | SQLite database management (SQLite Browser) |
-| **Health Check** | http://localhost:5001/api/health | API health status |
-
-## 🔧 API Endpoints
-
-### Tasks (Base URL: http://localhost:5001)
-- `GET /api/TodoTasks` - Get all tasks
-- `GET /api/TodoTasks/{id}` - Get task by ID
-- `POST /api/TodoTasks` - Create new task
-- `PUT /api/TodoTasks/{id}` - Update existing task
-- `DELETE /api/TodoTasks/{id}` - Delete task
-- `PATCH /api/TodoTasks/{id}/status` - Update task status
-
-### Example API Usage
-
-**Create a new task:**
 ```bash
-curl -X POST "http://localhost:5001/api/TodoTasks" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "title": "Complete project documentation",
-       "description": "Write comprehensive README and API docs",
-       "priority": 2,
-       "dueDate": "2024-12-31"
-     }'
+# Terminal 1 - Backend
+cd backend
+dotnet restore
+dotnet run --urls="http://localhost:5001"
+
+# Terminal 2 - Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
-## 👨‍💻 Developer Guide
+## 🔧 Troubleshooting
 
-### 🏗️ Adding New Features (SOC Pattern)
-
-**Follow these patterns when extending the application:**
-
-#### 1. **Adding New Modal/Form Features**
-```typescript
-// 📁 Create new folder: components/[featurename]/
-// 📄 Main orchestrator: [FeatureName].tsx (< 150 lines)
-// 📄 Sub-components: [FeatureName][Section].tsx
-// 📄 Custom hooks: hooks/use[FeatureName]*.ts
-
-// Example: Adding "DuplicateTask" feature
-components/duplicatetask/
-├── DuplicateTask.tsx              # Main orchestrator
-├── DuplicateTaskForm.tsx          # Form section
-├── DuplicateTaskOptions.tsx       # Options section
-└── DuplicateTaskActions.tsx       # Button actions
-
-hooks/
-├── useDuplicateTaskState.ts       # Form state management
-└── useDuplicateTaskLogic.ts       # Business logic
+**Scripts not executable (Mac/Linux):**
+```bash
+chmod +x start-dev.sh start-docker.sh
 ```
 
-#### 2. **Adding New Calendar Features**
-```typescript
-// 📁 Add to: components/calendar/
-// 📄 Follow naming: Calendar[ViewType].tsx
-// 📄 Connect to: CalendarModal.tsx
+**.NET SDK not found:**
 
-// Example: Adding "CalendarYearView"
-components/calendar/
-└── CalendarYearView.tsx           # New view component
+**On macOS:**
+- The script checks common locations:
+  - System PATH
+  - `~/.dotnet/` (user installation)
+  - `/usr/local/share/dotnet/` (system installation)
+- If installed elsewhere, add to PATH:
+  ```bash
+  export PATH="$PATH:/path/to/dotnet"
+  ```
 
-// Update CalendarModal.tsx:
-// 1. Add to view type union
-// 2. Add to viewButtons array  
-// 3. Add to renderCurrentView switch
-```
+**On Windows:**
+- The script checks:
+  - System PATH
+  - `%ProgramFiles%\dotnet\` (default installation)
+  - `%LocalAppData%\Microsoft\dotnet\` (user installation)
+- If installed elsewhere:
+  1. Add to PATH via System Properties → Environment Variables
+  2. Or restart your terminal/command prompt after installation
 
-#### 3. **Adding New Task Display Components**
-```typescript
-// 📁 Add to: components/taskcard/
-// 📄 Follow patterns from TaskCard.tsx
-// 📄 Use metallic theme consistently
+**Port already in use:**
+- Kill the process using the port or change the port in the scripts
 
-// Example: Adding "TaskKanbanCard"
-components/taskcard/
-└── TaskKanbanCard.tsx             # New display format
-```
+**Docker not starting on Windows:**
+- Ensure Docker Desktop is running
+- Enable WSL 2 if prompted
 
-#### 4. **Adding New Reusable UI**
-```typescript
-// 📁 Add to: components/ui/
-// 📄 Make generic and reusable
-// 📄 Include proper TypeScript interfaces
-
-// Example: Adding "ConfirmDialog"
-components/ui/
-└── ConfirmDialog.tsx              # Reusable confirmation
-```
-
-### 🎯 **SOC Best Practices**
-
-**✅ Do:**
-- Keep main components under 150 lines
-- Extract specialized logic into custom hooks
-- Use feature-based folder organization
-- Follow existing naming conventions
-- Maintain metallic theme consistency
-
-**❌ Don't:**
-- Put everything in one large component
-- Mix business logic with UI rendering
-- Create deeply nested folder structures
-- Break existing naming patterns
-
-### 🎨 **Theme Guidelines**
-
-**Metallic Design System:**
-```css
-/* Use these consistent patterns */
-background: 'linear-gradient(145deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%)'
-boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.1)'
-
-/* Golden accents */
-background: 'linear-gradient(145deg, #F4C430 0%, #e6b800 50%, #F4C430 100%)'
-
-/* Reflections */
-background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 30%)'
-```
-
-## 🎨 UI Components
-
-### TaskList
-- Displays all tasks with filtering and sorting
-- Shows task statistics dashboard
-- Handles loading states and empty states
-
-### TaskItem
-- Individual task card with all task information
-- Quick action buttons for status changes
-- Edit and delete functionality
-- Visual indicators for priority and overdue status
-
-### TaskForm
-- Modal form for creating and editing tasks
-- Client-side validation with error messages
-- Support for all task properties
-
-## 🧪 Testing
-
-The application includes comprehensive error handling and validation:
-
-### Backend Validation
-- Model validation attributes
-- Custom validation logic
-- Database constraint validation
-
-### Frontend Validation
-- Form validation with error messages
-- Type checking with TypeScript
-- Input sanitization
-
-### Manual Testing Scenarios
-1. **Create Task**: Test form validation and successful creation
-2. **Update Task**: Test editing functionality and status changes
-3. **Delete Task**: Test confirmation dialog and deletion
-4. **Filtering**: Test status and priority filters
-5. **Sorting**: Test all sorting options
-6. **Error Handling**: Test with backend offline
-
-## 🚀 Deployment Considerations
-
-### Production Readiness Checklist
-- ✅ Environment-specific configurations
-- ✅ CORS properly configured
-- ✅ Input validation and sanitization
-- ✅ Error handling and logging
-- ✅ Database migrations
-- ✅ Security headers
-- ✅ API documentation
-
-### Deployment Options
-
-**Backend:**
-- Azure App Service
-- AWS Elastic Beanstalk
-- Docker containers
-- IIS (Windows)
-
-**Frontend:**
-- Netlify
-- Vercel
-- Azure Static Web Apps
-- AWS S3 + CloudFront
-
-**Database:**
-- For production, consider migrating to:
-  - PostgreSQL
-  - SQL Server
-  - MySQL
-
-## 🔮 Future Enhancements
-
-### Planned Features
-- **User Authentication**: Multi-user support with login/registration
-- **Task Categories**: Organize tasks into categories or projects
-- **File Attachments**: Add files to tasks
-- **Comments**: Task discussion and collaboration
-- **Notifications**: Email/push notifications for due dates
-- **Search**: Full-text search across tasks
-- **Bulk Operations**: Select and modify multiple tasks
-- **Task Templates**: Reusable task templates
-- **Time Tracking**: Track time spent on tasks
-- **Reporting**: Advanced analytics and reports
-
-### Technical Improvements
-- **Caching**: Redis for improved performance
-- **Real-time Updates**: SignalR for live collaboration
-- **Offline Support**: PWA with offline capabilities
-- **API Versioning**: Support for multiple API versions
-- **Unit Testing**: Comprehensive test coverage
-- **CI/CD Pipeline**: Automated testing and deployment
-- **Monitoring**: Application performance monitoring
-- **Logging**: Structured logging with Serilog
+**Database issues:**
+- The SQLite database file is located at `./data/ezratask.db`
+- **To reset the database:**
+  ```bash
+  # Stop the application first (Ctrl+C)
+  rm -rf ./data/ezratask.db*  # Mac/Linux
+  del data\ezratask.db*       # Windows
+  # Restart the application - database will be recreated
+  ```
+- **If "database is locked" error:**
+  - Stop all running instances of the app
+  - Check no other process is using the database file
+  - Restart the application
+- **If "unable to open database file" error:**
+  - Ensure the `data` directory exists: `mkdir data`
+  - Check write permissions on the `data` directory
+  - On Windows, check if antivirus is blocking file creation
+- **To backup your database:**
+  ```bash
+  cp ./data/ezratask.db ./data/ezratask.backup.db
+  ```
+- **To restore from backup:**
+  ```bash
+  cp ./data/ezratask.backup.db ./data/ezratask.db
+  ```
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Developer Notes
-
-### Design Decisions
-
-**Why SQLite?**
-- Lightweight and zero-configuration
-- Perfect for development and small deployments
-- Easy to migrate to other databases later
-
-**Why Tailwind CSS?**
-- Utility-first approach for rapid development
-- Consistent design system
-- Excellent performance with purging
-
-**Why TypeScript?**
-- Type safety reduces bugs
-- Better IDE support and autocomplete
-- Improved maintainability
-
-### Performance Considerations
-- Optimistic updates for better UX
-- Efficient re-rendering with React keys
-- Debounced search and filtering
-- Lazy loading for large datasets (future)
-
-### Security Considerations
-- Input validation on both client and server
-- CORS configuration for cross-origin requests
-- SQL injection prevention with EF Core
-- XSS prevention with React's built-in escaping
+MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-**Built with ❤️ for Ezra's Full Stack Developer Assessment**
+Built by Mac Consolabe

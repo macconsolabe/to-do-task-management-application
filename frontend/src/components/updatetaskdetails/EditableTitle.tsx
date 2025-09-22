@@ -1,5 +1,5 @@
-import type { TodoTask, UpdateTaskDto } from '../../services/api';
-import { apiService } from '../../services/api';
+import type { TodoTask, UpdateTaskDto } from '../../services/types';
+import { taskService } from '../../services/TaskService';
 import { useNotificationCenter } from '../../contexts/NotificationCenterContext';
 
 interface EditableTitleProps {
@@ -26,7 +26,7 @@ export function EditableTitle({ task, isEditing, setIsEditing, onTaskUpdate, onS
         priority: task.priority,
         dueDate: task.dueDate
       };
-      const updatedTask = await apiService.updateTask(task.id, updateData);
+      const updatedTask = await taskService.updateTask(task.id, updateData);
       onTaskUpdate(updatedTask);
       setIsEditing(false);
       onShowNotification?.('Title updated ✓', 'success');

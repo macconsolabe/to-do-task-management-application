@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { TodoTask } from '../../services/api';
+import type { TodoTask } from '../../services/types';
 
 export function useCalendarState(tasks: TodoTask[]) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

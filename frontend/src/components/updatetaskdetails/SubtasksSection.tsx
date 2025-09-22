@@ -1,5 +1,6 @@
-import type { TodoTask } from '../../services/api';
-import { apiService } from '../../services/api';
+import type { TodoTask } from '../../services/types';
+import { taskService } from '../../services/TaskService';
+import { subtaskService } from '../../services/SubtaskService';
 import { useNotificationCenter } from '../../contexts/NotificationCenterContext';
 
 interface SubtasksSectionProps {
@@ -32,10 +33,10 @@ export function SubtasksSection({
     if (!newTitle.trim()) return;
     
     try {
-      await apiService.updateSubtask(subtaskId, newTitle.trim());
+      await subtaskService.updateSubtask(subtaskId, newTitle.trim());
       
       // Refresh the task to get updated subtasks
-      const updatedTask = await apiService.getTask(task.id);
+      const updatedTask = await taskService.getTask(task.id);
       onTaskUpdate(updatedTask);
       setEditingSubtask(null);
       onShowNotification?.('Subtask updated ✓', 'success');
@@ -47,10 +48,10 @@ export function SubtasksSection({
 
   const handleSubtaskDelete = async (subtaskId: number) => {
     try {
-      await apiService.deleteSubtask(subtaskId);
+      await subtaskService.deleteSubtask(subtaskId);
       
       // Refresh the task to get updated subtasks
-      const updatedTask = await apiService.getTask(task.id);
+      const updatedTask = await taskService.getTask(task.id);
       onTaskUpdate(updatedTask);
       onShowNotification?.('Subtask deleted ✓', 'success');
     } catch (error) {
@@ -64,14 +65,14 @@ export function SubtasksSection({
     
     try {
       const newOrder = task.subtasks ? task.subtasks.length : 0;
-      await apiService.createSubtask({
+      await subtaskService.createSubtask({
         Title: newSubtaskTitle.trim(),
         TodoTaskId: task.id,
         Order: newOrder
       });
       
       // Refresh the task to get updated subtasks
-      const updatedTask = await apiService.getTask(task.id);
+      const updatedTask = await taskService.getTask(task.id);
       onTaskUpdate(updatedTask);
       setNewSubtaskTitle('');
       setIsAddingSubtask(false);

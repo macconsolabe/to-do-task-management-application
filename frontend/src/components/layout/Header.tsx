@@ -5,19 +5,48 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { useHelp } from '../../contexts/HelpContext';
 import { ProfileModal } from '../profile/ProfileModal';
 import { NotificationToggle } from '../notifications/NotificationToggle';
+import { SearchDropdown } from '../ui/SearchDropdown';
+import { useTaskSearch } from '../../hooks/tasks/useTaskSearch';
+import { useSearchDropdown } from '../../hooks/ui/useSearchDropdown';
+import type { TodoTask } from '../../services/types';
 
 interface HeaderProps {
   onCreateClick: () => void;
   onCalendarClick?: () => void;
   onProfileModalChange?: (isOpen: boolean) => void;
+  // Task interaction handler for search dropdown
+  onTaskClick?: (task: TodoTask) => void;
 }
 
-export function Header({ onCreateClick, onCalendarClick, onProfileModalChange }: HeaderProps) {
+export function Header({ 
+  onCreateClick, 
+  onCalendarClick, 
+  onProfileModalChange,
+  onTaskClick
+}: HeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  
+  // Search functionality
+  const { 
+    searchQuery, 
+    searchResults, 
+    isSearching, 
+    searchError, 
+    handleSearchChange, 
+    clearSearch 
+  } = useTaskSearch();
+  
+  const { 
+    isDropdownOpen, 
+    searchInputRef, 
+    closeDropdown, 
+    handleSearchFocus, 
+    handleSearchInput 
+  } = useSearchDropdown();
   const { user, logout } = useUser();
   const { setIsSettingsOpen } = useSettings();
   const { setIsHelpOpen } = useHelp();
@@ -165,22 +194,63 @@ export function Header({ onCreateClick, onCalendarClick, onProfileModalChange }:
           </div>
         </div>
         {/* Search Bar and Create Button */}
-        <div className="flex items-center gap-4 flex-1 max-w-md mx-8">
+        <div className="flex items-center gap-4 flex-1 max-w-2xl mx-8">
           <div className="flex-1 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              {isSearching ? (
+                <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
             </div>
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 backdrop-blur-md border-2 border-gray-400 border-opacity-50 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-sm"
+              placeholder="Search tasks, descriptions, subtasks..."
+              value={searchQuery}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleSearchChange(value);
+                handleSearchInput(value);
+              }}
+              onFocus={handleSearchFocus}
+              className="w-full pl-10 pr-10 py-2 backdrop-blur-md border-2 border-gray-400 border-opacity-50 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-sm"
               style={{ 
                 background: 'rgba(255, 255, 255, 0.4)',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.5)',
                 '--tw-ring-color': '#F4C430'
               } as any}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  clearSearch();
+                  closeDropdown();
+                }}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                type="button"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            
+            {/* Search Dropdown */}
+            <SearchDropdown
+              isOpen={isDropdownOpen && searchQuery.length >= 1}
+              searchQuery={searchQuery}
+              searchResults={searchResults}
+              isSearching={isSearching}
+              searchError={searchError}
+              onTaskClick={(task) => {
+                onTaskClick?.(task);
+                closeDropdown();
+              }}
+              onClose={closeDropdown}
+              searchInputRef={searchInputRef}
             />
           </div>
           <button 
